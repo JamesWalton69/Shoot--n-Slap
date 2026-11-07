@@ -24,6 +24,19 @@ enum GameMode {
 var _state: State = State.TOS_GATE
 var game_mode: GameMode = GameMode.NORMAL
 
+# Story & Character Setup (Personalized Narrative)
+var player_name: String = "Sigma-7"
+var best_friend_name: String = "Vikram"
+var girlfriend_name: String = "Pooja"
+
+func set_story_names(p_name: String, bf_name: String, gf_name: String) -> void:
+	player_name = p_name.strip_edges() if p_name.strip_edges() != "" else "Sigma-7"
+	best_friend_name = bf_name.strip_edges() if bf_name.strip_edges() != "" else "Vikram"
+	girlfriend_name = gf_name.strip_edges() if gf_name.strip_edges() != "" else "Pooja"
+	print("[GameManager] Story names registered - Player: %s | Antagonist: %s | Hostage: %s" % [
+		player_name, best_friend_name, girlfriend_name
+	])
+
 func _ready() -> void:
 	Engine.max_fps = 144
 	SnssInput.register_inputs()

@@ -55,6 +55,26 @@ static func get_hum_loop() -> AudioStreamWAV:
 		_cache["hum_loop"] = _generate_hum_loop()
 	return _cache["hum_loop"]
 
+static func get_laser_trip_alarm() -> AudioStreamWAV:
+	if not _cache.has("laser_trip_alarm"):
+		_cache["laser_trip_alarm"] = _generate_laser_trip_alarm()
+	return _cache["laser_trip_alarm"]
+
+static func get_enemy_rifle_shot() -> AudioStreamWAV:
+	if not _cache.has("enemy_rifle_shot"):
+		_cache["enemy_rifle_shot"] = _generate_enemy_rifle_shot()
+	return _cache["enemy_rifle_shot"]
+
+static func get_heartbeat() -> AudioStreamWAV:
+	if not _cache.has("heartbeat"):
+		_cache["heartbeat"] = _generate_heartbeat()
+	return _cache["heartbeat"]
+
+static func get_player_hurt() -> AudioStreamWAV:
+	if not _cache.has("player_hurt"):
+		_cache["player_hurt"] = _generate_player_hurt()
+	return _cache["player_hurt"]
+
 static func _create_pcm16_wav(samples: PackedFloat32Array, mix_rate: int = 22050, looping: bool = false) -> AudioStreamWAV:
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
@@ -358,3 +378,71 @@ static func _generate_hum_loop() -> AudioStreamWAV:
 		samples[i] = (h1 + h2 + h3 + h4 + h6 + buzz) * 0.65
 
 	return _create_pcm16_wav(samples, mix_rate, true)
+
+static func _generate_laser_trip_alarm() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.65
+	var count := int(mix_rate * duration)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+
+	for i in range(count):
+		var t := float(i) / float(mix_rate)
+		# Alternating siren warble between 880 Hz and 1320 Hz
+		var freq := 880.0 + 440.0 * sin(t * 16.0 * TAU)
+		var envelope := clampf((duration - t) / duration, 0.0, 1.0)
+		var s := sin(t * freq * TAU) * 0.75 * envelope
+		samples[i] = s
+
+	return _create_pcm16_wav(samples, mix_rate, false)
+
+static func _generate_enemy_rifle_shot() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.38
+	var count := int(mix_rate * duration)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+
+	for i in range(count):
+		var t := float(i) / float(mix_rate)
+		var env := exp(-t * 22.0)
+		# Heavy punchy unsuppressed rifle blast with metallic transient
+		var noise := (randf() * 2.0 - 1.0) * env
+		var punch := sin(t * (180.0 - t * 300.0) * TAU) * env * 0.8
+		samples[i] = (noise * 0.6 + punch * 0.4) * 0.95
+
+	return _create_pcm16_wav(samples, mix_rate, false)
+
+static func _generate_heartbeat() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.85
+	var count := int(mix_rate * duration)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+
+	for i in range(count):
+		var t := float(i) / float(mix_rate)
+		# Lub-dub low-frequency heartbeat (50-70 Hz)
+		var env1 := exp(-pow((t - 0.12) * 28.0, 2.0))
+		var env2 := exp(-pow((t - 0.38) * 32.0, 2.0)) * 0.85
+		var wave1 := sin(t * 58.0 * TAU) * env1
+		var wave2 := sin(t * 64.0 * TAU) * env2
+		samples[i] = (wave1 + wave2) * 0.9
+
+	return _create_pcm16_wav(samples, mix_rate, false)
+
+static func _generate_player_hurt() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.28
+	var count := int(mix_rate * duration)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+
+	for i in range(count):
+		var t := float(i) / float(mix_rate)
+		var env := exp(-t * 16.0)
+		var tone := sin(t * (160.0 - t * 180.0) * TAU) * 0.6
+		var noise := (randf() * 2.0 - 1.0) * 0.4
+		samples[i] = (tone + noise) * env * 0.85
+
+	return _create_pcm16_wav(samples, mix_rate, false)

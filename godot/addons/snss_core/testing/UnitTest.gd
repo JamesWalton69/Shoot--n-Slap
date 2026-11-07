@@ -21,17 +21,20 @@ func _init() -> void:
 	test_audio_snapshot_dark_70()
 	test_game_manager_fade_guard()
 	test_game_manager_rooftop_state()
+	test_story_setup_names()
 	test_terrain_3d_registration()
 	test_animated_sliding_door()
 	test_rooftop_door_proximity_integration()
 	test_character_viewmodel_and_slap()
+	test_player_cod_health_and_regen()
 	test_weapon_ammo_and_reload()
 	test_sound_synthesizer()
 	test_corridor_henchman_and_slap_stagger()
 	test_henchman_retargeted_animations()
+	test_laser_tripwire()
 	test_terminal_hack_and_door_unlock()
 	test_part1_corridor_scene_integration()
-	test_floor_3_ingress_lockdown_and_barracks()
+	test_floor_3_ingress_lockdown_and_scare_room()
 	test_ambient_loops_and_scene_audio()
 
 	print("========================================")
@@ -164,6 +167,15 @@ func test_game_manager_rooftop_state() -> void:
 		_pass("GameManager: ROOFTOP state transition supported")
 	else:
 		_fail("GameManager", "Failed to transition to ROOFTOP")
+	gm.queue_free()
+
+func test_story_setup_names() -> void:
+	var gm: Node = GameManagerScript.new()
+	gm.set_story_names("Agent-47", "Vikram_BestFriend", "Pooja_Girlfriend")
+	if gm.player_name == "Agent-47" and gm.best_friend_name == "Vikram_BestFriend" and gm.girlfriend_name == "Pooja_Girlfriend":
+		_pass("GameManager: story names (Player, Best Friend, Girlfriend) registered correctly")
+	else:
+		_fail("GameManager", "Failed to set story names")
 	gm.queue_free()
 
 func test_terrain_3d_registration() -> void:
@@ -316,12 +328,21 @@ func test_character_viewmodel_and_slap() -> void:
 	else:
 		_fail("Viewmodel Rig", "shoot() failed to enter cooldown")
 
-	# Test slap trigger
-	viewmodel.slap()
-	if viewmodel._is_slapping or not viewmodel._can_slap:
-		_pass("Viewmodel Rig: slap() triggers procedural open-hand melee swing tween")
+	# Test ADS (Aim Down Sights)
+	var ads_changed := [false]
+	viewmodel.aim_state_changed.connect(func(_aim): ads_changed[0] = true)
+	viewmodel.set_aiming(true)
+	if viewmodel.is_aiming and ads_changed[0]:
+		_pass("Viewmodel Rig: Right-Click ADS transitions to aim-down-sights mode")
 	else:
-		_fail("Viewmodel Rig", "slap() failed to trigger slap state")
+		_fail("Viewmodel Rig", "Failed to activate ADS state")
+
+	# Verify slap is shelved for the finale
+	viewmodel.slap()
+	if not viewmodel._is_slapping:
+		_pass("Viewmodel Rig: slap melee is cleanly shelved for the finale per specification")
+	else:
+		_fail("Viewmodel Rig", "Slap swung unexpectedly")
 
 	# Test PlayerPawn integration
 	var player_script = load("res://addons/snss_core/player/PlayerPawn.gd")
@@ -345,6 +366,35 @@ func test_character_viewmodel_and_slap() -> void:
 
 	player.queue_free()
 	viewmodel.queue_free()
+
+func test_player_cod_health_and_regen() -> void:
+	var player_script = load("res://addons/snss_core/player/PlayerPawn.gd")
+	var player = CharacterBody3D.new()
+	player.set_script(player_script)
+	root.add_child(player)
+	player._ready()
+
+	# Initial full health
+	if player.current_health == 100.0:
+		_pass("PlayerPawn: initialized with 100 HP")
+	else:
+		_fail("PlayerPawn", "Initial health is not 100")
+
+	# Take damage
+	player.take_damage(40.0)
+	if player.current_health == 60.0 and player._damage_vignette != null:
+		_pass("PlayerPawn: take_damage(40) correctly reduces HP to 60 and updates damage vignette")
+	else:
+		_fail("PlayerPawn", "take_damage failed to reduce health or update vignette")
+
+	# Regenerate health
+	player._process(6.0) # More than 4.5s regen delay
+	if player.current_health > 60.0:
+		_pass("PlayerPawn: Call of Duty health regeneration restores HP after delay")
+	else:
+		_fail("PlayerPawn", "Health regeneration failed: HP remains %f" % player.current_health)
+
+	player.queue_free()
 
 func test_weapon_ammo_and_reload() -> void:
 	var rig_scene = load("res://addons/snss_core/player/ViewmodelRig.tscn")
@@ -484,6 +534,37 @@ func test_terminal_hack_and_door_unlock() -> void:
 	terminal.queue_free()
 	door.queue_free()
 
+func test_laser_tripwire() -> void:
+	var laser_script = load("res://addons/snss_core/scenes/LaserTripwire.gd")
+	if not laser_script:
+		_fail("LaserTripwire", "Failed to load LaserTripwire.gd")
+		return
+
+	var tripwire = Area3D.new()
+	tripwire.set_script(laser_script)
+	root.add_child(tripwire)
+	tripwire._ready()
+
+	var tripped_box := [false]
+	tripwire.tripped.connect(func(_intruder): tripped_box[0] = true)
+
+	var mock_player = CharacterBody3D.new()
+	tripwire._on_body_entered(mock_player)
+
+	if tripped_box[0] and tripwire.is_active:
+		_pass("LaserTripwire: beam intersection emits tripped signal and sounds alarm")
+	else:
+		_fail("LaserTripwire", "Failed to trigger tripwire alarm")
+
+	tripwire.disarm_tripwire()
+	if not tripwire.is_active:
+		_pass("LaserTripwire: disarm_tripwire() turns off active state and hides beam")
+	else:
+		_fail("LaserTripwire", "Tripwire remained active after disarm")
+
+	mock_player.queue_free()
+	tripwire.queue_free()
+
 func test_part1_corridor_scene_integration() -> void:
 	var corridor_scene = load("res://addons/snss_core/scenes/Part1Corridor.tscn")
 	if not corridor_scene:
@@ -495,15 +576,17 @@ func test_part1_corridor_scene_integration() -> void:
 
 	var entry_door = corridor.get_node_or_null("EntryBaySlidingDoor")
 	var exit_door = corridor.get_node_or_null("ExitElevatorSlidingDoor")
-	var terminal = corridor.get_node_or_null("TerminalConsoleArea")
-	var henchman1 = corridor.get_node_or_null("HenchmanPatrol1")
-	var henchman2 = corridor.get_node_or_null("HenchmanAmbush")
-	var henchman3 = corridor.get_node_or_null("HenchmanTerminus")
+	var scare_room = corridor.get_node_or_null("ScareRoom")
+	var locker_room = corridor.get_node_or_null("LockerRoom")
+	var laser_room = corridor.get_node_or_null("LaserRoom")
+	var blockage = corridor.get_node_or_null("CorridorBlockage")
+	var detour_door = corridor.get_node_or_null("MaintenanceDetourDoor")
+	var detour_encounter = corridor.get_node_or_null("DetourEncounter")
 
-	if entry_door and exit_door and terminal and henchman1 and henchman2 and henchman3:
-		_pass("Part1Corridor: entry door, locked exit door, terminal console, and 3 henchmen present")
+	if entry_door and exit_door and scare_room and locker_room and laser_room and blockage and detour_door and detour_encounter:
+		_pass("Part1Corridor: Blueprint layout verified (Scare Room, Lockers, Laser Room, Blockage & Detour present)")
 	else:
-		_fail("Part1Corridor", "One or more corridor components missing in scene hierarchy")
+		_fail("Part1Corridor", "One or more blueprint components missing in scene hierarchy")
 
 	corridor.queue_free()
 
@@ -542,7 +625,7 @@ func test_ambient_loops_and_scene_audio() -> void:
 	rooftop.queue_free()
 	corridor.queue_free()
 
-func test_floor_3_ingress_lockdown_and_barracks() -> void:
+func test_floor_3_ingress_lockdown_and_scare_room() -> void:
 	var corridor_scene = load("res://addons/snss_core/scenes/Part1Corridor.tscn")
 	if not corridor_scene:
 		_fail("Floor 3", "Failed to load Part1Corridor.tscn")
@@ -552,14 +635,15 @@ func test_floor_3_ingress_lockdown_and_barracks() -> void:
 	root.add_child(corridor)
 
 	var entry_door = corridor.get_node_or_null("EntryBaySlidingDoor")
-	var ammo_box = corridor.get_node_or_null("GuardBarracks/AmmoResupplyBox")
-	var memo = corridor.get_node_or_null("GuardBarracks/LoreMemo")
 	var cabin = corridor.get_node_or_null("IngressElevatorCabin")
+	var memo = corridor.get_node_or_null("ScareRoom/StoryMemoNote")
+	var key_alpha = corridor.get_node_or_null("ScareRoom/KeycardAlphaPickup")
+	var key_beta = corridor.get_node_or_null("UpperGuardBarracks/KeycardBetaPickup")
 
-	if cabin and ammo_box and memo:
-		_pass("Floor 3: Ingress elevator cabin, Guard Barracks, Lore Memorandum, and Ammo Resupply present")
+	if cabin and memo and key_alpha and key_beta:
+		_pass("Floor 3: Ingress cabin, Scare Room Story Note, Keycard Alpha, and Keycard Beta verified")
 	else:
-		_fail("Floor 3", "One or more Floor 3 components missing")
+		_fail("Floor 3", "Floor 3 key components or note missing")
 
 	# Test Ingress Lockdown (Point of No Return)
 	corridor._trigger_ingress_lockdown()
@@ -568,6 +652,21 @@ func test_floor_3_ingress_lockdown_and_barracks() -> void:
 	else:
 		_fail("Floor 3", "Lockdown failed to lock entry door")
 
+	# Test Keycard Alpha and Keycard Beta Pickups
+	var mock_player = CharacterBody3D.new()
+	corridor._on_keycard_alpha_pickup(mock_player)
+	if corridor.has_keycard_alpha:
+		_pass("Floor 3: picking up Keycard Alpha grants Laser Room clearance")
+	else:
+		_fail("Floor 3", "Failed to acquire Keycard Alpha")
+
+	corridor._on_keycard_beta_pickup(mock_player)
+	if corridor.has_keycard_beta and corridor.detour_door and not corridor.detour_door.is_locked:
+		_pass("Floor 3: picking up Keycard Beta unlocks the Maintenance Detour around the blockage")
+	else:
+		_fail("Floor 3", "Keycard Beta failed to unlock Maintenance Detour")
+
+	mock_player.queue_free()
 	corridor.queue_free()
 
 

@@ -9,7 +9,11 @@ signal setup_cancelled()
 const ROOFTOP_SCENE := "res://addons/snss_core/scenes/Rooftop.tscn"
 const MODE_SCENE := "res://addons/snss_core/scenes/GameModeSelect.tscn"
 
-const STORY_TEXT := "You are the night partner, dropped onto the industrial facility rooftop.\nYour hostage girlfriend is held by the ghost boss Bhoot-Teri-Maki.\nEnter the rooftop service elevator, select Floor 3, and begin the mission."
+const STORY_TEXT := "Mission Briefing: Your girlfriend has been abducted into this fortified industrial complex.\nInitial intelligence suggested a supernatural entity, but high-grade mercenary security guards the interior.\nInfiltrate via the rooftop service elevator, breach Floor 3, and neutralize the threat."
+
+var _player_name_edit: LineEdit
+var _best_friend_name_edit: LineEdit
+var _girlfriend_name_edit: LineEdit
 
 func _ready() -> void:
 	_build_screen()
@@ -44,7 +48,14 @@ func _build_screen() -> void:
 	story.add_theme_font_size_override("font_size", 20)
 	vbox.add_child(story)
 
-	_add_row(vbox, "CALLSIGN:", _make_line_edit("SIGMA-7", Vector2(300.0, 32.0)))
+	_player_name_edit = _make_line_edit("Sigma-7", Vector2(300.0, 32.0))
+	_add_row(vbox, "YOUR CALLSIGN / NAME:", _player_name_edit)
+
+	_best_friend_name_edit = _make_line_edit("Vikram", Vector2(300.0, 32.0))
+	_add_row(vbox, "BEST FRIEND'S NAME:", _best_friend_name_edit)
+
+	_girlfriend_name_edit = _make_line_edit("Pooja", Vector2(300.0, 32.0))
+	_add_row(vbox, "GIRLFRIEND'S NAME:", _girlfriend_name_edit)
 
 	var sens := SpinBox.new()
 	sens.min_value = 0.1
@@ -96,6 +107,10 @@ func _add_row(parent: VBoxContainer, label_text: String, field: Control) -> void
 
 func _on_enter() -> void:
 	if GameManager:
+		var p_name := _player_name_edit.text if _player_name_edit else "Sigma-7"
+		var bf_name := _best_friend_name_edit.text if _best_friend_name_edit else "Vikram"
+		var gf_name := _girlfriend_name_edit.text if _girlfriend_name_edit else "Pooja"
+		GameManager.set_story_names(p_name, bf_name, gf_name)
 		GameManager.transition(GameManager.State.ROOFTOP)
 	setup_completed.emit()
 	_goto(ROOFTOP_SCENE)

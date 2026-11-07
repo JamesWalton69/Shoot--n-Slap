@@ -6,14 +6,23 @@ extends CharacterBody3D
 signal entered_elevator()
 signal shot_fired(hit_node: Node3D, hit_pos: Vector3)
 signal slap_hit(hit_node: Node3D, hit_pos: Vector3)
+signal health_changed(current: float, max_val: float)
+signal player_died()
 
 const MOVEMENT_SPEED: float = 6.0
 const SPRINT_MULTIPLIER: float = 1.6
 const JUMP_VELOCITY: float = 4.5
 const MOUSE_SENSITIVITY_BASE: float = 0.0022
 
+@export var max_health: float = 100.0
+var current_health: float = 100.0
+var _time_since_damage: float = 999.0
+const REGEN_DELAY: float = 4.5
+const REGEN_RATE: float = 28.0
+
 var base_look_sensitivity: float = 1.0
 var look_multiplier: float = 1.0
+var _is_aiming_down_sights: bool = false
 
 var _flashlights: Array[SpotLight3D] = []
 var _head: Node3D
@@ -24,6 +33,8 @@ var _body_mesh: Node3D
 var _hud_layer: CanvasLayer
 var _sensitivity_label: Label
 var _weapon_status_label: Label
+var _health_label: Label
+var _damage_vignette: ColorRect
 var _reticle_center: ColorRect
 var _reticle_ticks: Array[ColorRect] = []
 var _hitmarker_container: Control
@@ -133,7 +144,15 @@ func _setup_hud() -> void:
 	_hud_layer.name = "PlayerHUD"
 	add_child(_hud_layer)
 
-	# Sensitivity HUD (Top Left)
+	# Fullscreen Call of Duty Damage Vignette
+	_damage_vignette = ColorRect.new()
+	_damage_vignette.name = "DamageVignette"
+	_damage_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_damage_vignette.color = Color(0.85, 0.05, 0.05, 0.0)
+	_damage_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud_layer.add_child(_damage_vignette)
+
+	# Sensitivity & Health HUD (Top Left)
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	panel.position = Vector2(24.0, 24.0)
@@ -146,14 +165,24 @@ func _setup_hud() -> void:
 	margin.add_theme_constant_override("margin_bottom", 8)
 	panel.add_child(margin)
 
+	var stats_box := VBoxContainer.new()
+	stats_box.add_theme_constant_override("separation", 4)
+	margin.add_child(stats_box)
+
+	_health_label = Label.new()
+	_health_label.text = "HEALTH: 100 / 100"
+	_health_label.add_theme_font_size_override("font_size", 14)
+	_health_label.modulate = Color(0.2, 1.0, 0.4)
+	stats_box.add_child(_health_label)
+
 	_sensitivity_label = Label.new()
-	_sensitivity_label.add_theme_font_size_override("font_size", 14)
-	margin.add_child(_sensitivity_label)
+	_sensitivity_label.add_theme_font_size_override("font_size", 13)
+	stats_box.add_child(_sensitivity_label)
 
 	# Weapon & Action HUD (Bottom Right)
 	var action_panel := PanelContainer.new()
 	action_panel.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	action_panel.offset_left = -340.0
+	action_panel.offset_left = -380.0
 	action_panel.offset_top = -80.0
 	action_panel.offset_right = -24.0
 	action_panel.offset_bottom = -24.0
@@ -166,8 +195,10 @@ func _setup_hud() -> void:
 	action_margin.add_theme_constant_override("margin_bottom", 8)
 	action_panel.add_child(action_margin)
 
+	var gm = get_node_or_null("/root/GameManager") if is_inside_tree() else null
+	var p_name: String = str(gm.get("player_name")) if gm and gm.get("player_name") != null else "SIGMA-7"
 	_weapon_status_label = Label.new()
-	_weapon_status_label.text = "SIGMA-7 // GLOCK 17 [17/17]\n[L-CLICK] FIRE  |  [R-CLICK / F] SLAP"
+	_weapon_status_label.text = "%s // GLOCK 17 [17/17]\n[L-CLICK] FIRE  |  [R-CLICK] AIM DOWN SIGHTS  |  [R] RELOAD" % p_name
 	_weapon_status_label.add_theme_font_size_override("font_size", 13)
 	action_margin.add_child(_weapon_status_label)
 
@@ -217,7 +248,54 @@ func _build_reticle_hud() -> void:
 		hm.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_hitmarker_container.add_child(hm)
 
+func _process(delta: float) -> void:
+	# Call of Duty Regenerating Health
+	_time_since_damage += delta
+	if _time_since_damage >= REGEN_DELAY and current_health < max_health:
+		current_health = move_toward(current_health, max_health, REGEN_RATE * delta)
+		health_changed.emit(current_health, max_health)
+		_update_hud()
+
+	# Dynamic Damage Vignette Intensity
+	if _damage_vignette:
+		var missing_ratio := (max_health - current_health) / max_health
+		var target_alpha := pow(missing_ratio, 1.4) * 0.75
+		_damage_vignette.color.a = move_toward(_damage_vignette.color.a, target_alpha, 3.5 * delta)
+
+	# Camera FOV Zoom for Aim Down Sights (ADS)
+	if _camera:
+		var target_fov: float = 70.0 if _is_aiming_down_sights else 90.0
+		_camera.fov = lerpf(_camera.fov, target_fov, 14.0 * delta)
+
+func take_damage(amount: float) -> void:
+	if current_health <= 0.0:
+		return
+	current_health = maxf(0.0, current_health - amount)
+	_time_since_damage = 0.0
+	_camera_trauma = minf(_camera_trauma + 0.45, 1.0)
+	health_changed.emit(current_health, max_health)
+	_update_hud()
+	print("[PlayerPawn] Hit taken! HP: %.1f / %.1f" % [current_health, max_health])
+
+	if current_health <= 0.0:
+		player_died.emit()
+		print("[PlayerPawn] Neutralized / KIA!")
+
+func heal(amount: float) -> void:
+	current_health = minf(max_health, current_health + amount)
+	health_changed.emit(current_health, max_health)
+	_update_hud()
+
 func _update_hud() -> void:
+	if _health_label:
+		_health_label.text = "HEALTH: %d / %d" % [int(ceil(current_health)), int(max_health)]
+		if current_health > 60.0:
+			_health_label.modulate = Color(0.2, 1.0, 0.4)
+		elif current_health > 30.0:
+			_health_label.modulate = Color(1.0, 0.85, 0.2)
+		else:
+			_health_label.modulate = Color(1.0, 0.2, 0.2)
+
 	if _sensitivity_label:
 		var effective: float = base_look_sensitivity * look_multiplier
 		_sensitivity_label.text = "AIM SENSITIVITY: %.2f x %.2f = %.2f (EFFECTIVE)" % [
@@ -240,14 +318,18 @@ func _on_viewmodel_slapped(hit_node: Node3D, hit_pos: Vector3, _hit_normal: Vect
 
 func _on_viewmodel_ammo_changed(current: int, max_capacity: int) -> void:
 	if _weapon_status_label:
+		var gm = get_node_or_null("/root/GameManager") if is_inside_tree() else null
+		var p_name: String = str(gm.get("player_name")) if gm and gm.get("player_name") != null else "SIGMA-7"
 		if current == 0:
-			_weapon_status_label.text = "SIGMA-7 // GLOCK 17 [EMPTY]\n[R] RELOAD  |  [R-CLICK / F] SLAP"
+			_weapon_status_label.text = "%s // GLOCK 17 [EMPTY]\n[R] RELOAD  |  [R-CLICK] AIM DOWN SIGHTS" % p_name
 		else:
-			_weapon_status_label.text = "SIGMA-7 // GLOCK 17 [%d/%d]\n[L-CLICK] FIRE  |  [R] RELOAD  |  [R-CLICK / F] SLAP" % [current, max_capacity]
+			_weapon_status_label.text = "%s // GLOCK 17 [%d/%d]\n[L-CLICK] FIRE  |  [R-CLICK] AIM DOWN SIGHTS  |  [R] RELOAD" % [p_name, current, max_capacity]
 
 func _on_viewmodel_reload_started() -> void:
 	if _weapon_status_label:
-		_weapon_status_label.text = "SIGMA-7 // GLOCK 17 [RELOADING...]\n[L-CLICK] BUSY  |  [R-CLICK / F] SLAP"
+		var gm = get_node_or_null("/root/GameManager") if is_inside_tree() else null
+		var p_name: String = str(gm.get("player_name")) if gm and gm.get("player_name") != null else "SIGMA-7"
+		_weapon_status_label.text = "%s // GLOCK 17 [RELOADING...]\n[L-CLICK] BUSY  |  [R-CLICK] AIM DOWN SIGHTS" % p_name
 
 func _on_viewmodel_reload_completed() -> void:
 	if _viewmodel and _weapon_status_label and _viewmodel.get("ammo") != null:
@@ -359,26 +441,24 @@ func _input(event: InputEvent) -> void:
 		if _viewmodel and _viewmodel.has_method("update_mouse_sway"):
 			_viewmodel.update_mouse_sway(event.relative)
 
-	elif event is InputEventMouseButton and event.pressed:
+	elif event is InputEventMouseButton:
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-			if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				# Shoot weapon
 				if _viewmodel and _viewmodel.has_method("shoot"):
 					_viewmodel.shoot()
 			elif event.button_index == MOUSE_BUTTON_RIGHT:
-				# Melee open-hand SLAP!
-				if _viewmodel and _viewmodel.has_method("slap"):
-					_viewmodel.slap()
+				# Aim Down Sights (ADS)
+				_set_ads(event.pressed)
 		else:
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			if event.pressed:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	elif event is InputEventKey and event.pressed:
-		if event.keycode == KEY_F or event.keycode == KEY_V:
-			# Melee open-hand SLAP key fallback
-			if _viewmodel and _viewmodel.has_method("slap"):
-				_viewmodel.slap()
-		elif event.keycode == KEY_R:
+		if event.keycode == KEY_R:
 			# Reload Glock 17
+			if _viewmodel and _viewmodel.has_method("reload"):
+				_viewmodel.reload()
 			if _viewmodel and _viewmodel.has_method("reload"):
 				_viewmodel.reload()
 		elif event.keycode == KEY_L:
@@ -395,6 +475,16 @@ func _input(event: InputEvent) -> void:
 
 	elif InputMap.has_action("flashlight_toggle") and event.is_action_pressed("flashlight_toggle"):
 		_toggle_flashlight()
+
+func _set_ads(aiming: bool) -> void:
+	_is_aiming_down_sights = aiming
+	if _viewmodel and _viewmodel.has_method("set_aiming"):
+		_viewmodel.set_aiming(aiming)
+	for tick in _reticle_ticks:
+		if is_instance_valid(tick):
+			tick.visible = not aiming
+	if _reticle_center and is_instance_valid(_reticle_center):
+		_reticle_center.visible = not aiming
 
 func _toggle_flashlight() -> void:
 	if is_inside_tree():

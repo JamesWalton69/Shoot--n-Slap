@@ -10,6 +10,7 @@ signal slap_connected(hit_collider: Node3D, hit_point: Vector3, hit_normal: Vect
 signal ammo_changed(current_ammo: int, max_capacity: int)
 signal reload_started()
 signal reload_completed()
+signal aim_state_changed(is_aiming: bool)
 
 @export var max_sway_degrees: float = 4.0
 @export var sway_smooth: float = 12.0
@@ -21,6 +22,15 @@ signal reload_completed()
 @export var ammo: int = 17
 @export var max_ammo: int = 17
 var is_reloading: bool = false
+var is_aiming: bool = false
+
+const ADS_RIGHT_ARM_POS: Vector3 = Vector3(0.0, -0.142, -0.35)
+const ADS_RIGHT_ARM_ROT: Vector3 = Vector3(0.0, 0.0, 0.0)
+
+func set_aiming(aim: bool) -> void:
+	if is_aiming != aim:
+		is_aiming = aim
+		aim_state_changed.emit(is_aiming)
 
 var _right_arm: Node3D
 var _left_arm: Node3D
@@ -99,6 +109,15 @@ func update_procedural_motion(delta: float, velocity: Vector3, is_grounded: bool
 	# Recover sway back to center
 	_sway_offset = _sway_offset.lerp(Vector2.ZERO, sway_smooth * delta)
 
+	# Smooth interpolation between Hipfire and ADS
+	if _right_arm:
+		var target_arm_pos := ADS_RIGHT_ARM_POS if is_aiming else _right_arm_default_pos
+		var target_arm_rot := ADS_RIGHT_ARM_ROT if is_aiming else _right_arm_default_rot
+		var ads_speed: float = 16.0 if is_aiming else 12.0
+		_right_arm.position = _right_arm.position.lerp(target_arm_pos, ads_speed * delta)
+		_right_arm.rotation = _right_arm.rotation.lerp(target_arm_rot, ads_speed * delta)
+
+	var motion_damping: float = 0.2 if is_aiming else 1.0
 	var speed := Vector2(velocity.x, velocity.z).length()
 	var is_moving := is_grounded and speed > 0.1
 
@@ -108,11 +127,11 @@ func update_procedural_motion(delta: float, velocity: Vector3, is_grounded: bool
 		_bob_timer += delta * 1.8
 
 	# Sinusoidal bobbing
-	var bob_h := cos(_bob_timer * 0.5) * (walk_bob_amount if is_moving else idle_bob_amount) * 0.6
-	var bob_v := sin(_bob_timer) * (walk_bob_amount if is_moving else idle_bob_amount)
+	var bob_h := cos(_bob_timer * 0.5) * (walk_bob_amount if is_moving else idle_bob_amount) * 0.6 * motion_damping
+	var bob_v := sin(_bob_timer) * (walk_bob_amount if is_moving else idle_bob_amount) * motion_damping
 
 	var target_pos := _default_pos + Vector3(bob_h, bob_v, 0.0)
-	var target_rot := _default_rot + Vector3(-_sway_offset.y * 0.8, -_sway_offset.x * 0.8, -bob_h * 2.0)
+	var target_rot := _default_rot + Vector3(-_sway_offset.y * 0.8 * motion_damping, -_sway_offset.x * 0.8 * motion_damping, -bob_h * 2.0)
 
 	position = position.lerp(target_pos, 10.0 * delta)
 	rotation = rotation.lerp(target_rot, 10.0 * delta)
@@ -224,11 +243,10 @@ func complete_reload() -> void:
 	reload_completed.emit()
 
 func slap() -> void:
-	if not _can_slap or _is_slapping:
-		return
+	# Slap feature is shelved for the finale per tactical Call of Duty direction
+	return
 
-	_can_slap = false
-	_is_slapping = true
+func _slap_disabled_for_now() -> void:
 
 	# Play Slap Whiff Audio
 	if _audio_player:
@@ -285,6 +303,9 @@ func _perform_shoot_raycast() -> void:
 
 	var space_state := _camera.get_world_3d().direct_space_state
 	var screen_center := get_viewport().get_visible_rect().size * 0.5
+	if not is_aiming:
+		screen_center += Vector2(randf_range(-6.0, 6.0), randf_range(-6.0, 6.0))
+
 	var from := _camera.project_ray_origin(screen_center)
 	var to := from + _camera.project_ray_normal(screen_center) * 120.0
 

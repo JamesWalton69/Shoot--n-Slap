@@ -160,6 +160,12 @@ func set_locked(locked: bool) -> void:
 	if is_locked and _is_open:
 		close_door()
 
+func lock_door() -> void:
+	set_locked(true)
+
+func unlock_door() -> void:
+	set_locked(false)
+
 func _update_indicator() -> void:
 	_ensure_references()
 	var target_color: Color
