@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://part1_corridor_csg1"]
+[gd_scene load_steps=39 format=3 uid="uid://part1_corridor_csg1"]
 
 [ext_resource type="Script" path="res://addons/snss_core/scenes/Part1Corridor.gd" id="1_part1_script"]
 [ext_resource type="Script" path="res://addons/snss_core/player/PlayerPawn.gd" id="2_player"]
@@ -20,6 +20,7 @@
 [ext_resource type="Material" path="res://addons/snss_core/materials/mat_cargo_crate.tres" id="18_crate"]
 [ext_resource type="Material" path="res://addons/snss_core/materials/mat_wooden_pallet.tres" id="19_pallet"]
 [ext_resource type="Script" path="res://addons/snss_core/scenes/LaserTripwire.gd" id="20_laser"]
+[ext_resource type="Script" path="res://addons/snss_core/scenes/KeycardPickup.gd" id="21_keycard"]
 
 [sub_resource type="Environment" id="Environment_corridor"]
 background_mode = 1
@@ -255,10 +256,20 @@ I refuse to die a virgin while you have everything!
 My mercenary army will bury you here on Floor 3."
 font_size = 20
 
+[node name="ScareTrigger" type="Area3D" parent="ScareRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -1.2)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ScareRoom/ScareTrigger"]
+shape = SubResource("BoxShape3D_pickup_zone")
+
 [node name="KeycardAlphaPickup" type="Area3D" parent="ScareRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, -1.8)
 collision_layer = 0
 collision_mask = 2
+script = ExtResource("21_keycard")
+card_name = "ALPHA"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ScareRoom/KeycardAlphaPickup"]
 shape = SubResource("BoxShape3D_pickup_zone")
@@ -338,6 +349,8 @@ beam_length = 6.8
 
 [node name="TerminalConsoleArea" type="Area3D" parent="LaserRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -3.8)
+collision_layer = 0
+collision_mask = 2
 script = ExtResource("16_terminal")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LaserRoom/TerminalConsoleArea"]
@@ -374,6 +387,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, 1)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.5, 0)
 collision_layer = 0
 collision_mask = 2
+script = ExtResource("21_keycard")
+card_name = "BETA"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="UpperGuardBarracks/KeycardBetaPickup"]
 shape = SubResource("BoxShape3D_pickup_zone")

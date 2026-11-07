@@ -346,6 +346,9 @@ func receive_bullet(damage: float = 40.0, hit_pos: Vector3 = Vector3.ZERO, hit_n
 		tween.tween_property(_visual_rig, "position:z", -0.08, 0.05)
 		tween.tween_property(_visual_rig, "position:z", 0.0, 0.15)
 
+func is_dead() -> bool:
+	return current_state == State.DEAD
+
 func die(death_impulse: Vector3 = Vector3.ZERO) -> void:
 	current_state = State.DEAD
 	velocity = death_impulse

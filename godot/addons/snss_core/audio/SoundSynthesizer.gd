@@ -75,6 +75,11 @@ static func get_player_hurt() -> AudioStreamWAV:
 		_cache["player_hurt"] = _generate_player_hurt()
 	return _cache["player_hurt"]
 
+static func get_radio_static() -> AudioStreamWAV:
+	if not _cache.has("radio_static"):
+		_cache["radio_static"] = _generate_radio_static()
+	return _cache["radio_static"]
+
 static func _create_pcm16_wav(samples: PackedFloat32Array, mix_rate: int = 22050, looping: bool = false) -> AudioStreamWAV:
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
@@ -444,5 +449,24 @@ static func _generate_player_hurt() -> AudioStreamWAV:
 		var tone := sin(t * (160.0 - t * 180.0) * TAU) * 0.6
 		var noise := (randf() * 2.0 - 1.0) * 0.4
 		samples[i] = (tone + noise) * env * 0.85
+
+	return _create_pcm16_wav(samples, mix_rate, false)
+
+static func _generate_radio_static() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.65
+	var count := int(mix_rate * duration)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+
+	var filter_lp := 0.0
+	for i in range(count):
+		var t := float(i) / float(mix_rate)
+		var env := sin((t / duration) * PI)
+		var raw := randf() * 2.0 - 1.0
+		filter_lp += 0.25 * (raw - filter_lp)
+		var whine := sin(t * (1800.0 + sin(t * 80.0) * 400.0) * TAU) * 0.25
+		var crackle := (1.0 if randf() < 0.08 else 0.0) * (randf() * 2.0 - 1.0) * 0.7
+		samples[i] = clampf((filter_lp * 0.6 + whine + crackle) * env * 0.75, -1.0, 1.0)
 
 	return _create_pcm16_wav(samples, mix_rate, false)

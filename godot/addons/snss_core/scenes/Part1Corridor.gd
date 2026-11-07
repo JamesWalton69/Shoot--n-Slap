@@ -17,6 +17,7 @@ var has_keycard_alpha: bool = false
 var has_keycard_beta: bool = false
 var lasers_disarmed: bool = false
 var _lockdown_triggered: bool = false
+var _scare_triggered: bool = false
 
 var _ingress_lockdown_label: Label3D
 var _ingress_siren: OmniLight3D
@@ -49,7 +50,7 @@ func _ready() -> void:
 	if _audio_player == null:
 		_audio_player = AudioStreamPlayer3D.new()
 		_audio_player.name = "FloorAudio"
-		_audio_player.bus = "SFX"
+		_audio_player.bus = &"SFX"
 		add_child(_audio_player)
 
 	# Format the personalized story memo from GameManager
@@ -60,15 +61,26 @@ func _ready() -> void:
 	if trigger and not trigger.body_entered.is_connected(_on_ingress_trigger_entered):
 		trigger.body_entered.connect(_on_ingress_trigger_entered)
 
+	# Scare Room Trigger (approaching desk/memo note)
+	var scare_trig := get_node_or_null("ScareRoom/ScareTrigger") as Area3D
+	if scare_trig and not scare_trig.body_entered.is_connected(_on_scare_trigger_entered):
+		scare_trig.body_entered.connect(_on_scare_trigger_entered)
+
 	# Scare Room Keycard Alpha Pickup
 	var key_alpha := get_node_or_null("ScareRoom/KeycardAlphaPickup") as Area3D
-	if key_alpha and not key_alpha.body_entered.is_connected(_on_keycard_alpha_pickup):
-		key_alpha.body_entered.connect(_on_keycard_alpha_pickup)
+	if key_alpha:
+		if not key_alpha.body_entered.is_connected(_on_keycard_alpha_pickup):
+			key_alpha.body_entered.connect(_on_keycard_alpha_pickup)
+		if key_alpha.has_signal("picked_up") and not key_alpha.is_connected("picked_up", _on_keycard_alpha_pickup):
+			key_alpha.connect("picked_up", _on_keycard_alpha_pickup)
 
 	# Upper Guard Room Keycard Beta Pickup
 	var key_beta := get_node_or_null("UpperGuardBarracks/KeycardBetaPickup") as Area3D
-	if key_beta and not key_beta.body_entered.is_connected(_on_keycard_beta_pickup):
-		key_beta.body_entered.connect(_on_keycard_beta_pickup)
+	if key_beta:
+		if not key_beta.body_entered.is_connected(_on_keycard_beta_pickup):
+			key_beta.body_entered.connect(_on_keycard_beta_pickup)
+		if key_beta.has_signal("picked_up") and not key_beta.is_connected("picked_up", _on_keycard_beta_pickup):
+			key_beta.connect("picked_up", _on_keycard_beta_pickup)
 
 	# Ammo Resupply Crate in Locker Room
 	var locker_ammo := get_node_or_null("LockerRoom/AmmoResupplyBox") as Area3D
@@ -83,9 +95,11 @@ func _ready() -> void:
 				child.tripped.connect(_on_laser_beam_tripped)
 
 	# Wire Terminal Console
-	if terminal and terminal.has_signal("override_completed"):
-		if not terminal.override_completed.is_connected(_on_terminal_override):
+	if terminal:
+		if terminal.has_signal("override_completed") and not terminal.override_completed.is_connected(_on_terminal_override):
 			terminal.override_completed.connect(_on_terminal_override)
+		elif terminal.has_signal("terminal_hacked") and not terminal.terminal_hacked.is_connected(_on_terminal_override):
+			terminal.terminal_hacked.connect(_on_terminal_override)
 
 	# Ensure EntryBaySlidingDoor starts open for arrival
 	if entry_door and entry_door.has_method("open_door"):
@@ -99,7 +113,7 @@ func _ready() -> void:
 
 func _update_story_memo() -> void:
 	if _story_memo_label:
-		var gm = get_node_or_null("/root/GameManager") if is_inside_tree() else null
+		var gm: Node = get_node_or_null("/root/GameManager") if is_inside_tree() else null
 		var p_name: String = str(gm.get("player_name")) if gm and gm.get("player_name") != null else "Sigma-7"
 		var bf_name: String = str(gm.get("best_friend_name")) if gm and gm.get("best_friend_name") != null else "Vikram"
 		var gf_name: String = str(gm.get("girlfriend_name")) if gm and gm.get("girlfriend_name") != null else "Pooja"
@@ -139,8 +153,34 @@ func _trigger_ingress_lockdown() -> void:
 		_audio_player.pitch_scale = 0.65
 		_audio_player.play()
 
-func _on_keycard_alpha_pickup(body: Node3D) -> void:
-	if body is CharacterBody3D and not has_keycard_alpha:
+func _on_scare_trigger_entered(body: Node3D) -> void:
+	if _scare_triggered:
+		return
+	if body is CharacterBody3D:
+		_scare_triggered = true
+		_play_scare_sequence()
+
+func _play_scare_sequence() -> void:
+	print("[Floor 3 Scare] Comm frequency intercepted: 'You will never leave Floor 3 alive...'")
+	var red_light := get_node_or_null("ScareRoom/RedEmergencyLight") as OmniLight3D
+	if red_light and is_inside_tree():
+		var tween := create_tween()
+		tween.tween_property(red_light, "light_energy", 0.1, 0.08)
+		tween.tween_property(red_light, "light_energy", 4.0, 0.06)
+		tween.tween_property(red_light, "light_energy", 0.2, 0.08)
+		tween.tween_property(red_light, "light_energy", 2.2, 0.14)
+
+	if _audio_player and is_inside_tree():
+		_audio_player.stream = SoundSynthesizer.get_radio_static()
+		_audio_player.play()
+
+	if _story_memo_label:
+		_story_memo_label.modulate = Color(1.0, 0.15, 0.15, 1.0)
+
+func _on_keycard_alpha_pickup(body_or_card: Variant = null) -> void:
+	if has_keycard_alpha:
+		return
+	if body_or_card is CharacterBody3D or body_or_card is String or body_or_card == null:
 		has_keycard_alpha = true
 		print("[Floor 3] Keycard ALPHA acquired! Laser Room security door unlocked.")
 		if _audio_player:
@@ -153,8 +193,10 @@ func _on_keycard_alpha_pickup(body: Node3D) -> void:
 		if key_pickup:
 			key_pickup.queue_free()
 
-func _on_keycard_beta_pickup(body: Node3D) -> void:
-	if body is CharacterBody3D and not has_keycard_beta:
+func _on_keycard_beta_pickup(body_or_card: Variant = null) -> void:
+	if has_keycard_beta:
+		return
+	if body_or_card is CharacterBody3D or body_or_card is String or body_or_card == null:
 		has_keycard_beta = true
 		print("[Floor 3] Keycard BETA acquired! Maintenance Detour around the blockage is now UNLOCKED.")
 		if _audio_player:
@@ -189,6 +231,10 @@ func _on_terminal_override() -> void:
 
 	if exit_door and exit_door.has_method("unlock_door"):
 		exit_door.unlock_door()
+
+	var exit_elev := get_node_or_null("ExitElevatorCabin/ExitElevatorZone")
+	if exit_elev and exit_elev.has_method("set_terminal_reached"):
+		exit_elev.set_terminal_reached(true)
 
 func _on_ammo_box_entered(body: Node3D) -> void:
 	if body is CharacterBody3D:

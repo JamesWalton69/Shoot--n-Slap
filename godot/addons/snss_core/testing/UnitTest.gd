@@ -35,6 +35,8 @@ func _init() -> void:
 	test_terminal_hack_and_door_unlock()
 	test_part1_corridor_scene_integration()
 	test_floor_3_ingress_lockdown_and_scare_room()
+	test_floor_3_elevator_clearance()
+	test_keycard_pickup_animation()
 	test_ambient_loops_and_scene_audio()
 
 	print("========================================")
@@ -452,10 +454,15 @@ func test_sound_synthesizer() -> void:
 		var reload_click: AudioStreamWAV = synth.get_reload_click()
 		var wind: AudioStreamWAV = synth.get_wind_loop()
 		var hum: AudioStreamWAV = synth.get_hum_loop()
+		var laser_alarm: AudioStreamWAV = synth.get_laser_trip_alarm()
+		var rifle_shot: AudioStreamWAV = synth.get_enemy_rifle_shot()
+		var heartbeat: AudioStreamWAV = synth.get_heartbeat()
+		var player_hurt: AudioStreamWAV = synth.get_player_hurt()
+		var radio_static: AudioStreamWAV = synth.get_radio_static()
 
-		if gunshot and slap and whiff and chime and footstep and reload_click and wind and hum:
+		if gunshot and slap and whiff and chime and footstep and reload_click and wind and hum and laser_alarm and rifle_shot and heartbeat and player_hurt and radio_static:
 			if wind.loop_mode == AudioStreamWAV.LOOP_FORWARD and hum.loop_mode == AudioStreamWAV.LOOP_FORWARD:
-				_pass("SoundSynthesizer: generated 16-bit PCM waveforms (gunshot, slap, footstep, reload, wind & hum loops)")
+				_pass("SoundSynthesizer: generated 16-bit PCM waveforms (gunshot, slap, reload, radio static, laser alarm, heartbeat)")
 			else:
 				_fail("SoundSynthesizer", "Wind or hum loops missing LOOP_FORWARD setting")
 		else:
@@ -666,8 +673,102 @@ func test_floor_3_ingress_lockdown_and_scare_room() -> void:
 	else:
 		_fail("Floor 3", "Keycard Beta failed to unlock Maintenance Detour")
 
+	# Test Scare Room Proximity Scare Sequence
+	corridor._on_scare_trigger_entered(mock_player)
+	if corridor._scare_triggered and memo.modulate.r > 0.9:
+		_pass("Floor 3: entering Scare Room triggers horror sequence, radio static, and blood note emphasis")
+	else:
+		_fail("Floor 3", "Scare sequence trigger failed")
+
 	mock_player.queue_free()
 	corridor.queue_free()
+
+func test_floor_3_elevator_clearance() -> void:
+	var corridor_scene = load("res://addons/snss_core/scenes/Part1Corridor.tscn")
+	if not corridor_scene:
+		_fail("Elevator Clearance", "Failed to load Part1Corridor.tscn")
+		return
+
+	var corridor = corridor_scene.instantiate()
+	root.add_child(corridor)
+
+	var elev = corridor.get_node_or_null("ExitElevatorCabin/ExitElevatorZone")
+	if not elev:
+		_fail("Elevator Clearance", "ExitElevatorZone not found in scene")
+		corridor.queue_free()
+		return
+
+	var mock_player = CharacterBody3D.new()
+	corridor.add_child(mock_player)
+	elev._active_player = mock_player
+
+	# 1. Hostiles are alive nearby (Detour Henchmen guarding exit) -> Clearance.HOSTILE_NEARBY
+	var cl = elev._determine_clearance()
+	if cl == elev.Clearance.HOSTILE_NEARBY:
+		_pass("Elevator S-2: descent blocked when armed hostiles remain in vicinity")
+	else:
+		_fail("Elevator Clearance", "Expected HOSTILE_NEARBY, got %d" % cl)
+
+	# 2. Neutralize nearby enemies in corridor
+	var enemies = corridor.find_children("", "CharacterBody3D", true, false)
+	for e in enemies:
+		if e.has_method("die"):
+			e.die()
+
+	# 3. Without terminal override -> Clearance.TERMINAL_REQUIRED
+	cl = elev._determine_clearance()
+	if cl == elev.Clearance.TERMINAL_REQUIRED:
+		_pass("Elevator S-2: descent blocked without security console terminal override")
+	else:
+		_fail("Elevator Clearance", "Expected TERMINAL_REQUIRED, got %d" % cl)
+
+	# 4. Terminal override hacked and enemies defeated -> Clearance.ALLOW
+	elev.set_terminal_reached(true)
+	cl = elev._determine_clearance()
+	if cl == elev.Clearance.ALLOW:
+		_pass("Elevator S-2: clearance granted when terminal is overridden and area secured")
+	else:
+		_fail("Elevator Clearance", "Expected ALLOW, got %d" % cl)
+
+	mock_player.queue_free()
+	corridor.queue_free()
+
+func test_keycard_pickup_animation() -> void:
+	var keycard_script = load("res://addons/snss_core/scenes/KeycardPickup.gd")
+	if not keycard_script:
+		_fail("Keycard Pickup", "Failed to load KeycardPickup.gd")
+		return
+
+	var card: Area3D = Area3D.new()
+	card.set_script(keycard_script)
+	root.add_child(card)
+
+	var init_rot = card.rotation.y
+
+	# Simulate process step
+	card._process(0.2)
+
+	if card.rotation.y != init_rot:
+		_pass("Keycard Pickup: continuous rotation animation active")
+	else:
+		_fail("Keycard Pickup", "Rotation did not advance in _process")
+
+	var picked_box := [false, ""]
+	card.picked_up.connect(func(c_name: String):
+		picked_box[0] = true
+		picked_box[1] = c_name
+	)
+
+	var mock_player = CharacterBody3D.new()
+	card._on_body_entered(mock_player)
+
+	if picked_box[0] and picked_box[1] == "ALPHA":
+		_pass("Keycard Pickup: detects player contact and emits picked_up with card identifier")
+	else:
+		_fail("Keycard Pickup", "Pickup signal emission failed")
+
+	mock_player.queue_free()
+	card.queue_free()
 
 
 
