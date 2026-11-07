@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "skills": {
+    "godot-2d-movement": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-2d-movement/SKILL.md",
+      "computedHash": "6a5ce94413b794880343234504524c12c932ece0b77df132ea4d57151c46ea24"
+    },
+    "godot-3d-essentials": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-3d-essentials/SKILL.md",
+      "computedHash": "5e26d03fd4e9b36d0ee776316e2fa4411a88fefcc45e2fdd662164f6af1eb59b"
+    },
+    "godot-animation": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-animation/SKILL.md",
+      "computedHash": "6880cca192c41ca9009809ac02eb7c20c78c4af44470e11e1e7cfe134a6e8b61"
+    },
+    "godot-audio": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-audio/SKILL.md",
+      "computedHash": "c989adf5206dfd7e07a4c883f5df3484eadb9c3ea241da438a1ab2f8a1a68c2c"
+    },
+    "godot-csharp": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-csharp/SKILL.md",
+      "computedHash": "5f5646a20c68a1219b7bf6132d8501869e56610d4b9b5c28b6d5141f31795535"
+    },
+    "godot-export": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-export/SKILL.md",
+      "computedHash": "cd16cdd9d81d7d29fe8ea7823deeecc706a5b6f320a7648c42e54856c6f12fb6"
+    },
+    "godot-gdscript": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-gdscript/SKILL.md",
+      "computedHash": "9cb999aaeb0154b16198d68fe491049e8450a42bb05224fe0ccacb21470c05bc"
+    },
+    "godot-gdscript-headless-testing": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-gdscript-headless-testing/SKILL.md",
+      "computedHash": "30dec804c953c75d650741f2a14703a5b7570831f8a8eaa54fc1276ea3a90409"
+    },
+    "godot-multiplayer": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-multiplayer/SKILL.md",
+      "computedHash": "2c24dc5877854c3e40bbd3275316d14634ab5bd20f95daa5d00b098fc9c4f267"
+    },
+    "godot-nodes-scenes": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-nodes-scenes/SKILL.md",
+      "computedHash": "8c569972b597da2a3d4ace02f65d986d0b137d10a7c35f2b893406a0fa189595"
+    },
+    "godot-physics": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-physics/SKILL.md",
+      "computedHash": "cfe9d6435a2915d3b6ddeae8d838dd1552b7139450edcc97672ea04989ef299e"
+    },
+    "godot-resources": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-resources/SKILL.md",
+      "computedHash": "5c7878d9f4423b376108ba382eb1ddb15ca5b7f274c76d560e2659106e895994"
+    },
+    "godot-shaders": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-shaders/SKILL.md",
+      "computedHash": "2220e2ae88841d71b361231c24a349b18f0e6936542f29ce0fe4849d8916b33a"
+    },
+    "godot-signals-groups": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-signals-groups/SKILL.md",
+      "computedHash": "9c6570a906cd9ce7f24ef3723a8357aa80e096be413752f762ab2f5dd73856ed"
+    },
+    "godot-tilemap": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-tilemap/SKILL.md",
+      "computedHash": "032613488f0b31bb5fc690fef24d695874a670202890322862d263681e91ab7b"
+    },
+    "godot-ui-control": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot/godot-ui-control/SKILL.md",
+      "computedHash": "aff8b20287da04fe03e17b1ffc8c00016ad380367aa8e952a2d62d4b53cbf194"
+    },
+    "roblox-characters": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-characters/SKILL.md",
+      "computedHash": "db42c1ce7feb87982d3b2a99e086aa0f240907e9bdda75078fbc54c375c5e1c7"
+    },
+    "roblox-datastores": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-datastores/SKILL.md",
+      "computedHash": "625a20184d9bf55a4f90a8ee60c283b8fb819cc7f2ad1091bf307d408b2c24a6"
+    },
+    "roblox-luau": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-luau/SKILL.md",
+      "computedHash": "fc8c84463e2d417cce3f0c0bf2d334bab77f83c2ed75627dc63cae18a976ed23"
+    },
+    "roblox-networking": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-networking/SKILL.md",
+      "computedHash": "076fc2bf03bbdf16e95b196131da15c38291e7be98a7e424ef7f4e4c3e32c673"
+    },
+    "roblox-physics": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-physics/SKILL.md",
+      "computedHash": "deb267d11a2972affb4ce0a36a764aee3de590204597802cd3b0c5e7e7b0b134"
+    },
+    "roblox-simulator-economy": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-simulator-economy/SKILL.md",
+      "computedHash": "510dcf69f23e815b38bb7ec95069ec3c602e133b997e37a7f8dac377d28ecf0c"
+    },
+    "roblox-studio-workflow": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-studio-workflow/SKILL.md",
+      "computedHash": "1370f7377c49f09caf7717c1ac00837505e4be04d29160d96a1012085469a3b1"
+    },
+    "roblox-ui": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/other-engines/roblox-ui/SKILL.md",
+      "computedHash": "d74afdae9aa479874ace9163ee5e2192136ba54d9b909cedbd2fe745983267a1"
+    }
+  }
+}

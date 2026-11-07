@@ -1,0 +1,754 @@
+[gd_scene load_steps=32 format=3 uid="uid://rooftop_csg1"]
+
+[ext_resource type="Script" path="res://addons/snss_core/player/PlayerPawn.gd" id="1_player"]
+[ext_resource type="Script" path="res://addons/snss_core/scenes/RooftopElevator.gd" id="2_rooftop_elev"]
+[ext_resource type="Material" uid="uid://mat_roof_gravel" path="res://addons/snss_core/materials/mat_roof_gravel.tres" id="3_gravel"]
+[ext_resource type="Material" uid="uid://mat_industrial_wall" path="res://addons/snss_core/materials/mat_industrial_wall.tres" id="4_wall"]
+[ext_resource type="Material" uid="uid://mat_rusted_metal" path="res://addons/snss_core/materials/mat_rusted_metal.tres" id="5_rust"]
+[ext_resource type="Material" uid="uid://mat_elevator_cabin" path="res://addons/snss_core/materials/mat_elevator_cabin.tres" id="6_elev"]
+[ext_resource type="Material" uid="uid://mat_hazard_trim" path="res://addons/snss_core/materials/mat_hazard_trim.tres" id="7_hazard"]
+[ext_resource type="Material" uid="uid://mat_button_active" path="res://addons/snss_core/materials/mat_button_active.tres" id="8_btn_act"]
+[ext_resource type="Material" uid="uid://mat_button_locked" path="res://addons/snss_core/materials/mat_button_locked.tres" id="9_btn_lck"]
+[ext_resource type="Material" uid="uid://mat_diamond_plate" path="res://addons/snss_core/materials/mat_diamond_plate.tres" id="10_dia"]
+[ext_resource type="PackedScene" uid="uid://sliding_door1" path="res://addons/snss_core/scenes/AnimatedSlidingDoor.tscn" id="11_door"]
+[ext_resource type="Material" uid="uid://mat_terminal_screen" path="res://addons/snss_core/materials/mat_terminal_screen.tres" id="12_screen"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_fire_extinguisher.tres" id="13_extinguisher"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_emergency_intercom.tres" id="14_intercom"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_brass_plaque.tres" id="15_brass"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_fluorescent_tube.tres" id="16_tube"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_caged_housing.tres" id="17_cage"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_wooden_pallet.tres" id="18_pallet"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_cargo_crate.tres" id="19_crate"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_rubber_bumper.tres" id="20_rubber"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_digital_readout.tres" id="21_readout"]
+[ext_resource type="Script" path="res://addons/snss_core/audio/AmbientAudioPlayer.gd" id="22_ambient"]
+
+[sub_resource type="Environment" id="Environment_rooftop"]
+background_mode = 1
+background_color = Color(0.015, 0.02, 0.04, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.18, 0.22, 0.32, 1)
+ambient_light_energy = 0.75
+tonemap_mode = 3
+tonemap_exposure = 1.05
+ssr_enabled = true
+ssr_max_steps = 64
+ssr_fade_in = 0.15
+ssr_fade_out = 2.0
+ssr_depth_tolerance = 0.2
+ssao_enabled = true
+ssao_radius = 1.8
+ssao_intensity = 2.0
+ssao_power = 1.5
+glow_enabled = true
+glow_intensity = 0.8
+glow_bloom = 0.15
+fog_enabled = true
+fog_light_color = Color(0.05, 0.07, 0.11, 1)
+fog_density = 0.015
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.022
+volumetric_fog_albedo = Color(0.1, 0.13, 0.18, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_elev_trigger"]
+size = Vector3(4.6, 3.8, 5.0)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.4
+height = 1.8
+
+[node name="Rooftop" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_rooftop")
+
+[node name="Moonlight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 20, 0)
+light_color = Color(0.68, 0.8, 1, 1)
+light_energy = 0.75
+shadow_enabled = true
+
+[node name="RooftopCSG" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="RoofSlab" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+size = Vector3(28, 0.6, 28)
+material = ExtResource("3_gravel")
+
+[node name="ParapetNorth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, -14)
+size = Vector3(28, 1.3, 0.7)
+material = ExtResource("4_wall")
+
+[node name="ParapetCapNorth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -14)
+size = Vector3(28.2, 0.1, 0.85)
+material = ExtResource("5_rust")
+
+[node name="ParapetSouth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 14)
+size = Vector3(28, 1.3, 0.7)
+material = ExtResource("4_wall")
+
+[node name="ParapetCapSouth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 14)
+size = Vector3(28.2, 0.1, 0.85)
+material = ExtResource("5_rust")
+
+[node name="ParapetEast" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.65, 0)
+size = Vector3(0.7, 1.3, 28)
+material = ExtResource("4_wall")
+
+[node name="ParapetCapEast" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.35, 0)
+size = Vector3(0.85, 0.1, 28.2)
+material = ExtResource("5_rust")
+
+[node name="ParapetWest" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0.65, 0)
+size = Vector3(0.7, 1.3, 28)
+material = ExtResource("4_wall")
+
+[node name="ParapetCapWest" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1.35, 0)
+size = Vector3(0.85, 0.1, 28.2)
+material = ExtResource("5_rust")
+
+[node name="DrainageGutterNorth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -13.4)
+size = Vector3(27, 0.1, 0.4)
+material = ExtResource("5_rust")
+
+[node name="DrainageGutterSouth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 13.4)
+size = Vector3(27, 0.1, 0.4)
+material = ExtResource("5_rust")
+
+[node name="IngressHatchCurb" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 9.5)
+size = Vector3(2.5, 0.36, 2.5)
+material = ExtResource("7_hazard")
+
+[node name="IngressHatchWell" type="CSGBox3D" parent="RooftopCSG/IngressHatchCurb"]
+operation = 2
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+size = Vector3(1.8, 0.6, 1.8)
+material = ExtResource("5_rust")
+
+[node name="IngressHatchLid" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(0.939693, -0.34202, 0, 0.34202, 0.939693, 0, 0, 0, 1, -1.2, 0.75, 9.5)
+size = Vector3(0.12, 1.9, 1.9)
+material = ExtResource("5_rust")
+
+[node name="HVACPlinthEast" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.25, 3)
+size = Vector3(3.6, 0.5, 6)
+material = ExtResource("4_wall")
+
+[node name="HVACChillerUnitEast" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.4, 3)
+size = Vector3(3.2, 1.8, 5.6)
+material = ExtResource("5_rust")
+
+[node name="HVACFanCowl1" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 2.45, 1.6)
+radius = 0.9
+height = 0.3
+material = ExtResource("5_rust")
+
+[node name="HVACFanCowl2" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 2.45, 4.4)
+radius = 0.9
+height = 0.3
+material = ExtResource("5_rust")
+
+[node name="HVACDuctToPenthouse" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.2, 1.6, -1.5)
+size = Vector3(4.8, 0.8, 0.8)
+material = ExtResource("5_rust")
+
+[node name="WaterBoilerPlinthWest" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.25, 3)
+size = Vector3(3.6, 0.5, 6)
+material = ExtResource("4_wall")
+
+[node name="WaterBoilerTank" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 2.2, 3)
+radius = 1.3
+height = 3.4
+material = ExtResource("5_rust")
+
+[node name="BoilerPipeRun" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.2, 1.2, 3)
+radius = 0.12
+height = 4.2
+material = ExtResource("5_rust")
+
+[node name="ConduitWallWest" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, -13.5, 0.45, 0)
+radius = 0.08
+height = 24.0
+material = ExtResource("5_rust")
+
+[node name="ElevatorPenthouseOuter" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, -5)
+size = Vector3(5.6, 4.6, 5.8)
+material = ExtResource("4_wall")
+
+[node name="ElevatorPenthouseInner" type="CSGBox3D" parent="RooftopCSG"]
+operation = 2
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, -4.9)
+size = Vector3(4.8, 4.4, 5.0)
+material = ExtResource("6_elev")
+
+[node name="ElevatorPenthouseDoorCut" type="CSGBox3D" parent="RooftopCSG"]
+operation = 2
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -2.2)
+size = Vector3(2.3, 2.8, 1.4)
+material = ExtResource("7_hazard")
+
+[node name="ElevatorCanopy" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.9, -1.9)
+size = Vector3(2.8, 0.25, 1.4)
+material = ExtResource("7_hazard")
+
+[node name="PenthouseRoofCap" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.45, -5)
+size = Vector3(5.8, 0.15, 5.8)
+material = ExtResource("5_rust")
+
+[node name="AviationBeaconMast" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 5.2, -7.4)
+radius = 0.08
+height = 1.4
+material = ExtResource("5_rust")
+
+[node name="AviationBeaconLightHousing" type="CSGSphere3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 5.9, -7.4)
+radius = 0.16
+material = ExtResource("9_btn_lck")
+
+[node name="ServiceLadderRail1" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.9, 2.2, -3.8)
+radius = 0.04
+height = 4.2
+material = ExtResource("5_rust")
+
+[node name="ServiceLadderRail2" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.9, 2.2, -4.4)
+radius = 0.04
+height = 4.2
+material = ExtResource("5_rust")
+
+[node name="ElevatorCabinFloorPlate" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -4.9)
+size = Vector3(4.7, 0.04, 4.9)
+material = ExtResource("10_dia")
+
+[node name="ElevatorFloorHazardTrim" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -2.4)
+size = Vector3(2.4, 0.02, 0.3)
+material = ExtResource("7_hazard")
+
+[node name="DrainageGratingTrench" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -7.2)
+size = Vector3(4.4, 0.02, 0.18)
+material = ExtResource("17_cage")
+
+[node name="FloorTieDown1" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0.04, -2.8)
+radius = 0.06
+height = 0.02
+material = ExtResource("17_cage")
+
+[node name="FloorTieDown2" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, 0.04, -2.8)
+radius = 0.06
+height = 0.02
+material = ExtResource("17_cage")
+
+[node name="FloorTieDown3" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, 0.04, -7.0)
+radius = 0.06
+height = 0.02
+material = ExtResource("17_cage")
+
+[node name="BumperWestLow" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34, 0.5, -4.9)
+size = Vector3(0.12, 0.22, 4.6)
+material = ExtResource("20_rubber")
+
+[node name="BumperWestHigh" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34, 1.35, -4.9)
+size = Vector3(0.12, 0.22, 4.6)
+material = ExtResource("20_rubber")
+
+[node name="BumperEastLow" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.34, 0.5, -4.9)
+size = Vector3(0.12, 0.22, 4.6)
+material = ExtResource("20_rubber")
+
+[node name="BumperEastHigh" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.34, 1.35, -4.9)
+size = Vector3(0.12, 0.22, 4.6)
+material = ExtResource("20_rubber")
+
+[node name="BumperNorthLow" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -7.34)
+size = Vector3(4.4, 0.22, 0.12)
+material = ExtResource("20_rubber")
+
+[node name="BumperNorthHigh" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -7.34)
+size = Vector3(4.4, 0.22, 0.12)
+material = ExtResource("20_rubber")
+
+[node name="HandrailWest" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.28, 1.05, -4.9)
+size = Vector3(0.06, 0.06, 4.4)
+material = ExtResource("5_rust")
+
+[node name="HandrailEast" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.28, 1.05, -4.9)
+size = Vector3(0.06, 0.06, 4.4)
+material = ExtResource("5_rust")
+
+[node name="HandrailNorth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, -7.28)
+size = Vector3(4.4, 0.06, 0.06)
+material = ExtResource("5_rust")
+
+[node name="PilasterWest1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34, 2.2, -3.6)
+size = Vector3(0.12, 4.2, 0.22)
+material = ExtResource("5_rust")
+
+[node name="PilasterWest2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34, 2.2, -6.2)
+size = Vector3(0.12, 4.2, 0.22)
+material = ExtResource("5_rust")
+
+[node name="PilasterEast1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.34, 2.2, -3.6)
+size = Vector3(0.12, 4.2, 0.22)
+material = ExtResource("5_rust")
+
+[node name="PilasterEast2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.34, 2.2, -6.2)
+size = Vector3(0.12, 4.2, 0.22)
+material = ExtResource("5_rust")
+
+[node name="PilasterNorth1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 2.2, -7.34)
+size = Vector3(0.22, 4.2, 0.12)
+material = ExtResource("5_rust")
+
+[node name="PilasterNorth2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 2.2, -7.34)
+size = Vector3(0.22, 4.2, 0.12)
+material = ExtResource("5_rust")
+
+[node name="CeilingCrossBeam1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.28, -3.6)
+size = Vector3(4.7, 0.18, 0.25)
+material = ExtResource("5_rust")
+
+[node name="CeilingCrossBeam2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.28, -6.2)
+size = Vector3(4.7, 0.18, 0.25)
+material = ExtResource("5_rust")
+
+[node name="CeilingLongBeam1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 4.28, -4.9)
+size = Vector3(0.18, 0.16, 4.8)
+material = ExtResource("5_rust")
+
+[node name="CeilingLongBeam2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 4.28, -4.9)
+size = Vector3(0.18, 0.16, 4.8)
+material = ExtResource("5_rust")
+
+[node name="HoistPiston1" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 4.25, -4.9)
+radius = 0.14
+height = 0.55
+material = ExtResource("17_cage")
+
+[node name="HoistPiston2" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 4.25, -4.9)
+radius = 0.14
+height = 0.55
+material = ExtResource("17_cage")
+
+[node name="CeilingHatchCurb" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.33, -5.0)
+size = Vector3(1.2, 0.14, 1.2)
+material = ExtResource("7_hazard")
+
+[node name="CeilingHatchPlate" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.38, -5.0)
+size = Vector3(1.0, 0.06, 1.0)
+material = ExtResource("5_rust")
+
+[node name="CeilingHatchPadlock" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.26, -4.5)
+size = Vector3(0.08, 0.12, 0.04)
+material = ExtResource("15_brass")
+
+[node name="VentRim" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 4.34, -5.7)
+radius = 0.52
+height = 0.08
+material = ExtResource("17_cage")
+
+[node name="VentHub" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 4.3, -5.7)
+radius = 0.14
+height = 0.1
+material = ExtResource("5_rust")
+
+[node name="VentBlade1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.68, 4.31, -5.7)
+size = Vector3(0.42, 0.02, 0.1)
+material = ExtResource("17_cage")
+
+[node name="VentBlade2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.12, 4.31, -5.7)
+size = Vector3(0.42, 0.02, 0.1)
+material = ExtResource("17_cage")
+
+[node name="LightHousingWest" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 4.22, -4.6)
+size = Vector3(0.28, 0.12, 2.0)
+material = ExtResource("17_cage")
+
+[node name="LightTubeWest" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 4.15, -4.6)
+size = Vector3(0.12, 0.06, 1.8)
+material = ExtResource("16_tube")
+
+[node name="LightHousingEast" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 4.22, -4.6)
+size = Vector3(0.28, 0.12, 2.0)
+material = ExtResource("17_cage")
+
+[node name="LightTubeEast" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 4.15, -4.6)
+size = Vector3(0.12, 0.06, 1.8)
+material = ExtResource("16_tube")
+
+[node name="OverheadMarqueeHousing" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.85, -2.42)
+size = Vector3(1.6, 0.32, 0.12)
+material = ExtResource("17_cage")
+
+[node name="OverheadMarqueeScreen" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.85, -2.48)
+size = Vector3(1.46, 0.22, 0.04)
+material = ExtResource("21_readout")
+
+[node name="OverheadMarqueeTrim" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.68, -2.42)
+size = Vector3(1.64, 0.04, 0.14)
+material = ExtResource("7_hazard")
+
+[node name="ExtinguisherCabinetBorder" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.37, 1.6, -4.2)
+size = Vector3(0.06, 1.1, 0.6)
+material = ExtResource("7_hazard")
+
+[node name="ExtinguisherBody" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.28, 1.55, -4.2)
+radius = 0.11
+height = 0.65
+material = ExtResource("13_extinguisher")
+
+[node name="ExtinguisherTopDome" type="CSGSphere3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.28, 1.88, -4.2)
+radius = 0.11
+material = ExtResource("13_extinguisher")
+
+[node name="ExtinguisherValve" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.28, 1.98, -4.2)
+size = Vector3(0.06, 0.12, 0.06)
+material = ExtResource("15_brass")
+
+[node name="ExtinguisherHose" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.22, 1.6, -4.1)
+radius = 0.016
+height = 0.55
+material = ExtResource("20_rubber")
+
+[node name="IntercomHousing" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34, 1.7, -5.6)
+size = Vector3(0.12, 0.48, 0.34)
+material = ExtResource("14_intercom")
+
+[node name="IntercomSpeakerPanel" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.27, 1.8, -5.6)
+size = Vector3(0.02, 0.22, 0.26)
+material = ExtResource("17_cage")
+
+[node name="IntercomHandset" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.25, 1.65, -5.45)
+size = Vector3(0.07, 0.26, 0.07)
+material = ExtResource("17_cage")
+
+[node name="IntercomCallButton" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.27, 1.6, -5.6)
+radius = 0.03
+height = 0.04
+material = ExtResource("8_btn_act")
+
+[node name="CapacityPlaque" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, -7.34)
+size = Vector3(0.85, 0.38, 0.03)
+material = ExtResource("15_brass")
+
+[node name="InspectionPlaque" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 2.1, -7.34)
+size = Vector3(0.42, 0.28, 0.025)
+material = ExtResource("15_brass")
+
+[node name="EStopPlate" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.36, 0.85, -5.4)
+size = Vector3(0.04, 0.32, 0.32)
+material = ExtResource("7_hazard")
+
+[node name="EStopHousing" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 0.85, -5.4)
+size = Vector3(0.08, 0.16, 0.16)
+material = ExtResource("17_cage")
+
+[node name="EStopLeverArm" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, 2.26, 0.88, -5.4)
+radius = 0.018
+height = 0.2
+material = ExtResource("15_brass")
+
+[node name="EStopKnob" type="CSGSphere3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0.96, -5.4)
+radius = 0.045
+material = ExtResource("13_extinguisher")
+
+[node name="ButtonPanelBacking" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.34, 1.5, -4.5)
+size = Vector3(0.08, 1.25, 0.65)
+material = ExtResource("5_rust")
+
+[node name="ButtonPanelTrim" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.34, 1.5, -4.18)
+size = Vector3(0.09, 1.27, 0.03)
+material = ExtResource("7_hazard")
+
+[node name="ButtonPanelTrim2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.34, 1.5, -4.82)
+size = Vector3(0.09, 1.27, 0.03)
+material = ExtResource("7_hazard")
+
+[node name="ButtonPanelScreen" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.29, 1.9, -4.5)
+size = Vector3(0.04, 0.28, 0.48)
+material = ExtResource("12_screen")
+
+[node name="Button3" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.29, 1.58, -4.5)
+size = Vector3(0.05, 0.12, 0.12)
+material = ExtResource("8_btn_act")
+
+[node name="Button2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.29, 1.42, -4.5)
+size = Vector3(0.05, 0.12, 0.12)
+material = ExtResource("9_btn_lck")
+
+[node name="Button1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.29, 1.26, -4.5)
+size = Vector3(0.05, 0.12, 0.12)
+material = ExtResource("9_btn_lck")
+
+[node name="Button0" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.29, 1.10, -4.5)
+size = Vector3(0.05, 0.12, 0.12)
+material = ExtResource("9_btn_lck")
+
+[node name="KeySwitchLock" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 2.29, 0.95, -4.5)
+radius = 0.025
+height = 0.04
+material = ExtResource("15_brass")
+
+[node name="PalletRunner1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0.08, -6.4)
+size = Vector3(0.1, 0.12, 1.2)
+material = ExtResource("18_pallet")
+
+[node name="PalletRunner2" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.08, -6.4)
+size = Vector3(0.1, 0.12, 1.2)
+material = ExtResource("18_pallet")
+
+[node name="PalletRunner3" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.15, 0.08, -6.4)
+size = Vector3(0.1, 0.12, 1.2)
+material = ExtResource("18_pallet")
+
+[node name="PalletDeck" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.155, -6.4)
+size = Vector3(1.2, 0.03, 1.2)
+material = ExtResource("18_pallet")
+
+[node name="SpecimenCrateLarge" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.52, -6.4)
+size = Vector3(0.9, 0.7, 0.9)
+material = ExtResource("19_crate")
+
+[node name="CrateHazardStripe" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.75, -6.4)
+size = Vector3(0.92, 0.08, 0.92)
+material = ExtResource("7_hazard")
+
+[node name="SpecimenCrateTop" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -1.6, 1.1, -6.35)
+size = Vector3(0.65, 0.45, 0.65)
+material = ExtResource("19_crate")
+
+[node name="CrateTieStrap1" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0.8, -6.4)
+size = Vector3(0.05, 1.35, 0.92)
+material = ExtResource("17_cage")
+
+[node name="ConduitUpperEast" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 2.32, 3.8, -4.9)
+radius = 0.025
+height = 4.4
+material = ExtResource("5_rust")
+
+[node name="ConduitUpperWest" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, -2.32, 3.8, -4.9)
+radius = 0.025
+height = 4.4
+material = ExtResource("5_rust")
+
+[node name="ConduitDownConsole" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.32, 2.95, -4.5)
+radius = 0.025
+height = 1.7
+material = ExtResource("5_rust")
+
+[node name="ConduitDownIntercom" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.32, 2.85, -5.6)
+radius = 0.025
+height = 1.9
+material = ExtResource("5_rust")
+
+[node name="WinchPlinth" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.82, -5.0)
+size = Vector3(2.4, 0.25, 2.0)
+material = ExtResource("4_wall")
+
+[node name="WinchMotorHousing" type="CSGBox3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 5.3, -5.0)
+size = Vector3(1.6, 0.8, 1.2)
+material = ExtResource("5_rust")
+
+[node name="WinchCableDrum" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0.7, 5.3, -5.0)
+radius = 0.38
+height = 0.9
+material = ExtResource("17_cage")
+
+[node name="WinchFlange1" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0.7, 5.3, -4.55)
+radius = 0.44
+height = 0.06
+material = ExtResource("5_rust")
+
+[node name="WinchFlange2" type="CSGCylinder3D" parent="RooftopCSG"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0.7, 5.3, -5.45)
+radius = 0.44
+height = 0.06
+material = ExtResource("5_rust")
+
+[node name="PenthouseSlidingDoor" parent="." instance=ExtResource("11_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.15)
+
+[node name="RooftopElevator" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -4.9)
+script = ExtResource("2_rooftop_elev")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RooftopElevator"]
+shape = SubResource("BoxShape3D_elev_trigger")
+
+[node name="CabinLight" type="SpotLight3D" parent="RooftopElevator"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2.2, 0)
+light_color = Color(1, 0.95, 0.82, 1)
+light_energy = 2.4
+spot_range = 8.0
+spot_angle = 65.0
+shadow_enabled = true
+
+[node name="FlickerLight" type="OmniLight3D" parent="RooftopElevator"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 2.0, 0.3)
+light_color = Color(0.85, 0.95, 1, 1)
+light_energy = 0.8
+omni_range = 4.0
+
+[node name="ConsoleLight" type="OmniLight3D" parent="RooftopElevator"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0, 0.4)
+light_color = Color(0.2, 1, 0.5, 1)
+light_energy = 0.8
+omni_range = 2.5
+
+[node name="MarqueeGlow" type="OmniLight3D" parent="RooftopElevator"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 2.3)
+light_color = Color(0.2, 0.9, 1, 1)
+light_energy = 0.6
+omni_range = 2.5
+
+[node name="ExtinguisherGlow" type="OmniLight3D" parent="RooftopElevator"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, -0.4, 0.7)
+light_color = Color(1, 0.25, 0.2, 1)
+light_energy = 0.4
+omni_range = 1.8
+omni_range = 2.5
+
+[node name="ExteriorEntranceLight" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 3.1, -1.8)
+light_color = Color(1, 0.88, 0.65, 1)
+light_energy = 1.5
+spot_range = 7.0
+spot_angle = 45.0
+shadow_enabled = true
+
+[node name="AviationRedBeacon" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 6.0, -7.4)
+light_color = Color(1, 0.1, 0.1, 1)
+light_energy = 1.6
+omni_range = 8.0
+
+[node name="HatchAmberLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 9.5)
+light_color = Color(1, 0.65, 0.2, 1)
+light_energy = 0.8
+omni_range = 4.0
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 8.0)
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="Head" type="Node3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Player/Head"]
+fov = 90.0
+current = true
+
+[node name="AmbientWind" type="AudioStreamPlayer" parent="."]
+script = ExtResource("22_ambient")
+bus = &"Ambient"
+ambient_type = "wind"

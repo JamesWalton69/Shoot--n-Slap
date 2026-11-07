@@ -1,0 +1,199 @@
+[gd_scene load_steps=24 format=3 uid="uid://viewmodel_rig1"]
+
+[ext_resource type="Script" path="res://addons/snss_core/player/ViewmodelRig.gd" id="1_script"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_tactical_sleeve.tres" id="2_sleeve"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_tactical_glove.tres" id="3_glove"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_gun_metal.tres" id="4_gunmetal"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_rubber_bumper.tres" id="5_rubber"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_muzzle_flash.tres" id="6_muzzle"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_terminal_screen.tres" id="7_screen"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_button_active.tres" id="8_active"]
+[ext_resource type="PackedScene" path="res://assets/models/weapons/Glock17.fbx" id="9_glock"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_forearm"]
+radius = 0.05
+height = 0.38
+
+[sub_resource type="BoxMesh" id="BoxMesh_wrist"]
+size = Vector3(0.08, 0.07, 0.09)
+
+[sub_resource type="BoxMesh" id="BoxMesh_palm"]
+size = Vector3(0.085, 0.045, 0.11)
+
+[sub_resource type="BoxMesh" id="BoxMesh_finger"]
+size = Vector3(0.02, 0.02, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_thumb"]
+size = Vector3(0.022, 0.022, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gun_grip"]
+size = Vector3(0.038, 0.12, 0.065)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gun_frame"]
+size = Vector3(0.036, 0.04, 0.19)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gun_slide"]
+size = Vector3(0.034, 0.042, 0.18)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_suppressor"]
+top_radius = 0.022
+bottom_radius = 0.022
+height = 0.18
+
+[sub_resource type="BoxMesh" id="BoxMesh_sight_tritium"]
+size = Vector3(0.006, 0.012, 0.006)
+
+[sub_resource type="BoxMesh" id="BoxMesh_laser_module"]
+size = Vector3(0.028, 0.024, 0.08)
+
+[sub_resource type="QuadMesh" id="QuadMesh_muzzle_flash"]
+size = Vector2(0.24, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wrist_comms"]
+size = Vector3(0.065, 0.02, 0.075)
+
+[sub_resource type="QuadMesh" id="QuadMesh_comms_screen"]
+size = Vector2(0.055, 0.065)
+
+[node name="ViewmodelRig" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="RightArm" type="Node3D" parent="."]
+transform = Transform3D(0.965926, 0.0449435, -0.254887, 0, 0.984808, 0.173648, 0.258819, -0.167731, 0.951251, 0.2, -0.22, -0.42)
+
+[node name="Forearm" type="MeshInstance3D" parent="RightArm"]
+transform = Transform3D(0.939693, 0, 0.34202, 0.116978, 0.939693, -0.321394, -0.321394, 0.34202, 0.883022, 0.08, -0.08, 0.22)
+mesh = SubResource("CapsuleMesh_forearm")
+surface_material_override/0 = ExtResource("2_sleeve")
+
+[node name="WristBand" type="MeshInstance3D" parent="RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, -0.02, 0.07)
+mesh = SubResource("BoxMesh_wrist")
+surface_material_override/0 = ExtResource("5_rubber")
+
+[node name="GlovePalm" type="MeshInstance3D" parent="RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0.01)
+mesh = SubResource("BoxMesh_palm")
+surface_material_override/0 = ExtResource("3_glove")
+
+[node name="GloveFingersWrapped" type="MeshInstance3D" parent="RightArm"]
+transform = Transform3D(0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0, 1, -0.035, -0.06, 0)
+mesh = SubResource("BoxMesh_finger")
+surface_material_override/0 = ExtResource("3_glove")
+
+[node name="Weapon" type="Node3D" parent="RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.04)
+
+[node name="Glock17Model" parent="RightArm/Weapon" instance=ExtResource("9_glock")]
+transform = Transform3D(0.003, 0, 0, 0, 0.003, 0, 0, 0, 0.003, 0, -0.035, -0.04)
+
+[node name="Grip" type="MeshInstance3D" parent="RightArm/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, -0.06, 0.02)
+mesh = SubResource("BoxMesh_gun_grip")
+surface_material_override/0 = ExtResource("5_rubber")
+
+[node name="Frame" type="MeshInstance3D" parent="RightArm/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
+mesh = SubResource("BoxMesh_gun_frame")
+surface_material_override/0 = ExtResource("5_rubber")
+
+[node name="Slide" type="MeshInstance3D" parent="RightArm/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, -0.06)
+mesh = SubResource("BoxMesh_gun_slide")
+surface_material_override/0 = ExtResource("4_gunmetal")
+
+[node name="FrontSight" type="MeshInstance3D" parent="RightArm/Weapon/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.024, -0.08)
+mesh = SubResource("BoxMesh_sight_tritium")
+surface_material_override/0 = ExtResource("8_active")
+
+[node name="RearSightLeft" type="MeshInstance3D" parent="RightArm/Weapon/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.011, 0.024, 0.08)
+mesh = SubResource("BoxMesh_sight_tritium")
+surface_material_override/0 = ExtResource("8_active")
+
+[node name="RearSightRight" type="MeshInstance3D" parent="RightArm/Weapon/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.011, 0.024, 0.08)
+mesh = SubResource("BoxMesh_sight_tritium")
+surface_material_override/0 = ExtResource("8_active")
+
+[node name="Suppressor" type="MeshInstance3D" parent="RightArm/Weapon"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.025, -0.24)
+mesh = SubResource("CylinderMesh_suppressor")
+surface_material_override/0 = ExtResource("4_gunmetal")
+
+[node name="LaserModule" type="MeshInstance3D" parent="RightArm/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.028, -0.1)
+mesh = SubResource("BoxMesh_laser_module")
+surface_material_override/0 = ExtResource("4_gunmetal")
+
+[node name="LaserLens" type="MeshInstance3D" parent="RightArm/Weapon/LaserModule"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.042)
+mesh = SubResource("BoxMesh_sight_tritium")
+surface_material_override/0 = ExtResource("8_active")
+
+[node name="MuzzleFlashLight" type="OmniLight3D" parent="RightArm/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, -0.36)
+visible = false
+light_color = Color(1, 0.8, 0.3, 1)
+light_energy = 4.0
+omni_range = 8.0
+
+[node name="MuzzleFlashMesh" type="MeshInstance3D" parent="RightArm/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, -0.38)
+visible = false
+mesh = SubResource("QuadMesh_muzzle_flash")
+surface_material_override/0 = ExtResource("6_muzzle")
+
+[node name="LeftArm" type="Node3D" parent="."]
+transform = Transform3D(0.965926, -0.0669873, 0.25, 0, 0.965926, 0.258819, -0.258819, -0.25, 0.933013, -0.22, -0.25, -0.4)
+
+[node name="Forearm" type="MeshInstance3D" parent="LeftArm"]
+transform = Transform3D(0.939693, 0, -0.34202, -0.116978, 0.939693, -0.321394, 0.321394, 0.34202, 0.883022, -0.08, -0.08, 0.22)
+mesh = SubResource("CapsuleMesh_forearm")
+surface_material_override/0 = ExtResource("2_sleeve")
+
+[node name="WristBand" type="MeshInstance3D" parent="LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, -0.02, 0.07)
+mesh = SubResource("BoxMesh_wrist")
+surface_material_override/0 = ExtResource("5_rubber")
+
+[node name="WristComms" type="MeshInstance3D" parent="LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0.025, 0.02, 0.07)
+mesh = SubResource("BoxMesh_wrist_comms")
+surface_material_override/0 = ExtResource("4_gunmetal")
+
+[node name="ScreenMesh" type="MeshInstance3D" parent="LeftArm/WristComms"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.012, 0)
+mesh = SubResource("QuadMesh_comms_screen")
+surface_material_override/0 = ExtResource("7_screen")
+
+[node name="GlovePalm" type="MeshInstance3D" parent="LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.01)
+mesh = SubResource("BoxMesh_palm")
+surface_material_override/0 = ExtResource("3_glove")
+
+[node name="Thumb" type="MeshInstance3D" parent="LeftArm/GlovePalm"]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, 0.045, 0.01, -0.02)
+mesh = SubResource("BoxMesh_thumb")
+surface_material_override/0 = ExtResource("3_glove")
+
+[node name="IndexFinger" type="MeshInstance3D" parent="LeftArm/GlovePalm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, 0, -0.075)
+mesh = SubResource("BoxMesh_finger")
+surface_material_override/0 = ExtResource("3_glove")
+
+[node name="MiddleFinger" type="MeshInstance3D" parent="LeftArm/GlovePalm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, 0, -0.08)
+mesh = SubResource("BoxMesh_finger")
+surface_material_override/0 = ExtResource("3_glove")
+
+[node name="RingFinger" type="MeshInstance3D" parent="LeftArm/GlovePalm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, 0, -0.075)
+mesh = SubResource("BoxMesh_finger")
+surface_material_override/0 = ExtResource("3_glove")
+
+[node name="PinkyFinger" type="MeshInstance3D" parent="LeftArm/GlovePalm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, 0, -0.065)
+mesh = SubResource("BoxMesh_finger")
+surface_material_override/0 = ExtResource("3_glove")

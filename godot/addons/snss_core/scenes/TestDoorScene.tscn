@@ -1,0 +1,84 @@
+[gd_scene load_steps=8 format=3 uid="uid://test_door_scene1"]
+
+[ext_resource type="Material" uid="uid://mat_concrete_floor" path="res://addons/snss_core/materials/mat_concrete_floor.tres" id="1_floor"]
+[ext_resource type="Material" uid="uid://mat_industrial_wall" path="res://addons/snss_core/materials/mat_industrial_wall.tres" id="2_wall"]
+[ext_resource type="PackedScene" uid="uid://sliding_door1" path="res://addons/snss_core/scenes/AnimatedSlidingDoor.tscn" id="3_door"]
+[ext_resource type="Script" path="res://addons/snss_core/player/PlayerPawn.gd" id="4_player"]
+
+[sub_resource type="Environment" id="Environment_test"]
+background_mode = 1
+background_color = Color(0.04, 0.05, 0.07, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.25, 0.28, 0.35, 1)
+ambient_light_energy = 0.9
+tonemap_mode = 3
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.4
+height = 1.8
+
+[node name="TestDoorScene" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_test")
+
+[node name="CeilingLight" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 4.5, 0)
+light_color = Color(1, 0.96, 0.88, 1)
+light_energy = 2.0
+spot_range = 10.0
+spot_angle = 55.0
+shadow_enabled = true
+
+[node name="TestArchitecture" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Floor" type="CSGBox3D" parent="TestArchitecture"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+size = Vector3(10, 0.5, 14)
+material = ExtResource("1_floor")
+
+[node name="WallLeft" type="CSGBox3D" parent="TestArchitecture"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.5, 0)
+size = Vector3(2.5, 3.0, 0.3)
+material = ExtResource("2_wall")
+
+[node name="WallRight" type="CSGBox3D" parent="TestArchitecture"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.5, 0)
+size = Vector3(2.5, 3.0, 0.3)
+material = ExtResource("2_wall")
+
+[node name="WallHeader" type="CSGBox3D" parent="TestArchitecture"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.1, 0)
+size = Vector3(5.0, 0.6, 0.3)
+material = ExtResource("2_wall")
+
+[node name="AnimatedSlidingDoor" parent="." instance=ExtResource("3_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 4.0)
+script = ExtResource("4_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="Head" type="Node3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Player/Head"]
+fov = 90.0
+current = true
+
+[node name="HintHUD" type="CanvasLayer" parent="."]
+
+[node name="MarginContainer" type="MarginContainer" parent="HintHUD"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+theme_override_constants/margin_top = 20
+
+[node name="Label" type="Label" parent="HintHUD/MarginContainer"]
+layout_mode = 2
+text = "[PROXIMITY DOOR TEST]\nWalk towards the door (W). Sensor turns GREEN and slides OPEN automatically.\nStep back to let it close after 1.6s delay."
+horizontal_alignment = 1

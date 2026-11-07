@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "EmergencyIntercomYellow"
+albedo_color = Color(0.95, 0.65, 0.08, 1)
+metallic = 0.1
+roughness = 0.45

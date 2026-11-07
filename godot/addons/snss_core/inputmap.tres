@@ -1,0 +1,23 @@
+[gd_resource type="InputMap" load_steps=2 format=3]
+
+[resource]
+
+[dictionary "move_forward"]
+
+[dictionary "move_back"]
+
+[dictionary "move_left"]
+
+[dictionary "move_right"]
+
+[dictionary "jump"]
+
+[dictionary "look_right"]
+
+[dictionary "look_right_neg"]
+
+[dictionary "look_down"]
+
+[dictionary "look_down_neg"]
+
+[dictionary "flashlight_toggle"]

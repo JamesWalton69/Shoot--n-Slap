@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "TacticalGlove"
+albedo_color = Color(0.09, 0.09, 0.1, 1)
+metallic = 0.2
+roughness = 0.6
+clearcoat_enabled = true
+clearcoat = 0.4
+clearcoat_roughness = 0.3

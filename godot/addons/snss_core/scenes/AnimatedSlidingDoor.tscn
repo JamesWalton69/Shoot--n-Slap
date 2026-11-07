@@ -1,0 +1,114 @@
+[gd_scene load_steps=16 format=3 uid="uid://sliding_door1"]
+
+[ext_resource type="Script" path="res://addons/snss_core/scenes/AnimatedSlidingDoor.gd" id="1_door"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_elevator_cabin.tres" id="2_cabin"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_hazard_trim.tres" id="3_hazard"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_rusted_metal.tres" id="4_rust"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_diamond_plate.tres" id="5_diamond"]
+[ext_resource type="Material" path="res://addons/snss_core/materials/mat_button_standby.tres" id="6_standby"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_header"]
+size = Vector3(2.5, 0.32, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jamb"]
+size = Vector3(0.16, 2.5, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_threshold"]
+size = Vector3(2.42, 0.04, 0.32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sensor_housing"]
+size = Vector3(0.28, 0.1, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_indicator"]
+size = Vector3(0.22, 0.08, 0.06)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_door_panel"]
+size = Vector3(1.05, 2.5, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_door_panel"]
+size = Vector3(1.05, 2.5, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_trim_stripe"]
+size = Vector3(0.08, 2.48, 0.13)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_detect_zone"]
+size = Vector3(4.5, 3.2, 8.5)
+
+[node name="AnimatedSlidingDoor" type="Node3D"]
+script = ExtResource("1_door")
+
+[node name="Frame" type="Node3D" parent="."]
+
+[node name="HeaderHousing" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.66, 0)
+mesh = SubResource("BoxMesh_header")
+surface_material_override/0 = ExtResource("4_rust")
+
+[node name="JambLeft" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.13, 1.25, 0)
+mesh = SubResource("BoxMesh_jamb")
+surface_material_override/0 = ExtResource("4_rust")
+
+[node name="JambRight" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.13, 1.25, 0)
+mesh = SubResource("BoxMesh_jamb")
+surface_material_override/0 = ExtResource("4_rust")
+
+[node name="ThresholdPlate" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+mesh = SubResource("BoxMesh_threshold")
+surface_material_override/0 = ExtResource("5_diamond")
+
+[node name="SensorEyeHousing" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.76, 0.15)
+mesh = SubResource("BoxMesh_sensor_housing")
+surface_material_override/0 = ExtResource("4_rust")
+
+[node name="StatusIndicatorMesh" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.62, 0.15)
+mesh = SubResource("BoxMesh_indicator")
+surface_material_override/0 = ExtResource("6_standby")
+
+[node name="StatusLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.62, 0.25)
+light_color = Color(1, 0.65, 0.1, 1)
+light_energy = 1.0
+omni_range = 3.5
+
+[node name="DoorLeft" type="AnimatableBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.525, 1.25, 0)
+sync_to_physics = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorLeft"]
+shape = SubResource("BoxShape3D_door_panel")
+
+[node name="PanelMesh" type="MeshInstance3D" parent="DoorLeft"]
+mesh = SubResource("BoxMesh_door_panel")
+surface_material_override/0 = ExtResource("2_cabin")
+
+[node name="EdgeTrim" type="MeshInstance3D" parent="DoorLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0, 0)
+mesh = SubResource("BoxMesh_trim_stripe")
+surface_material_override/0 = ExtResource("3_hazard")
+
+[node name="DoorRight" type="AnimatableBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.525, 1.25, 0)
+sync_to_physics = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorRight"]
+shape = SubResource("BoxShape3D_door_panel")
+
+[node name="PanelMesh" type="MeshInstance3D" parent="DoorRight"]
+mesh = SubResource("BoxMesh_door_panel")
+surface_material_override/0 = ExtResource("2_cabin")
+
+[node name="EdgeTrim" type="MeshInstance3D" parent="DoorRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.48, 0, 0)
+mesh = SubResource("BoxMesh_trim_stripe")
+surface_material_override/0 = ExtResource("3_hazard")
+
+[node name="ProximityDetector" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ProximityDetector"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -1.0)
+shape = SubResource("BoxShape3D_detect_zone")

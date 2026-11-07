@@ -1,0 +1,68 @@
+# ==========================================
+# Godot Engine Ignored Files & Directories
+# ==========================================
+# Godot 4.x internal import cache, shaders, and editor data
+.godot/
+*/.godot/
+
+# Godot 3.x cache (for compatibility)
+.import/
+*/.import/
+
+# Local engine distribution builds (editor executables)
+Godot_v*/
+[Gg]odot*.exe
+[Gg]odot*.zip
+
+# ==========================================
+# GDExtension / C# / .NET / Mono
+# ==========================================
+.mono/
+*/.mono/
+[Bb]in/
+![Aa]ddons/*/bin/
+[Oo]bj/
+*.suo
+*.user
+*.userprefs
+*.sln.docstates
+
+# ==========================================
+# Export / Build Artifacts
+# ==========================================
+build/
+export/
+exports/
+*.apk
+*.aab
+*.ipa
+
+# ==========================================
+# IDEs & Text Editors
+# ==========================================
+.vs/
+.vscode/
+.idea/
+*.csproj.user
+
+# ==========================================
+# Temporary Downloads & Raw Asset Archives
+# ==========================================
+donwloaded/
+downloaded/
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# ==========================================
+# Operating System & Temporary Files
+# ==========================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+*.tmp
+*.bak
+*.swp
+*~

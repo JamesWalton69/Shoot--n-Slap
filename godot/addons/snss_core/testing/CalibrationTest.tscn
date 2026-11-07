@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://caltest1"]
+
+[ext_resource type="Script" path="res://addons/snss_core/testing/CalibrationTest.gd" id="1_ct"]
+
+[node name="CalibrationTest" type="CanvasLayer"]
+script = ExtResource("1_ct")

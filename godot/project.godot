@@ -1,0 +1,54 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Shoot-'nd-Slap"
+run/main_scene="res://addons/snss_core/scenes/TOS.tscn"
+config/features=PackedStringArray("4.7")
+config/icon="res://icon.svg"
+
+[audio]
+
+buses/default_bus_layout="res://addons/snss_core/default_bus_layout.tres"
+
+[autoload]
+
+GameManager="*res://addons/snss_core/autoload/GameManager.gd"
+InputMapper="*res://addons/snss_core/autoload/InputMapper.gd"
+CalibrationTimer="*res://addons/snss_core/autoload/CalibrationTimer.gd"
+AudioEnvironmentManager="*res://addons/snss_core/autoload/AudioEnvironmentManager.gd"
+EnvironmentController="*res://addons/snss_core/autoload/EnvironmentController.gd"
+
+[display]
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/size/resolution_lock=1280
+window/title="Shoot-'n-Slap [PRIVATE BUILD]"
+window/resizable=false
+window/window_placement_mode=1
+window/mask=12
+
+[dotnet]
+
+project/assembly_name="Shoot--nd-Slap"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/snss_core/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"

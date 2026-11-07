@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ps1"]
+
+[ext_resource type="Script" path="res://addons/snss_core/modescene/PlayerSetup.gd" id="1_ps"]
+
+[node name="PlayerSetup" type="Control"]
+script = ExtResource("1_ps")

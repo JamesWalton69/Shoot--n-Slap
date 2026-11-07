@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://player_body1"]
+
+[ext_resource type="Script" path="res://addons/snss_core/player/PlayerBodyMesh.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/tactical_soldier/Tactical_Soldier_02.fbx" id="2_soldier"]
+
+[node name="PlayerBodyMesh" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="TacticalSoldierModel" parent="." instance=ExtResource("2_soldier")]

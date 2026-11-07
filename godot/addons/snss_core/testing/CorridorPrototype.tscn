@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3 uid="uid://corproto1"]
+
+[ext_resource type="Script" path="res://addons/snss_core/player/PlayerPawn.gd" id="1_player"]
+[ext_resource type="Script" path="res://addons/snss_core/player/Elevator.gd" id="2_elevator"]
+
+[node name="CorridorPrototype" type="Node3D"]
+script = ExtResource("1_player")
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="ZigZagCorridor" type="StaticBody3D" parent="World"]
+collision = SubResource("collision")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World/ZigZagCorridor"]
+mesh = SubResource("mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/ZigZagCorridor"]
+shape = SubResource("shape")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="World"]
+shadow_enabled = true
+light_energy = 0.7
+
+[node name="AmbientLight3D" type="AmbientLight3D" parent="World"]
+light_energy = 0.3
+
+[node name="Head" type="Node3D" parent="CorridorPrototype"]
+position = Vector3(0, 1.75, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CorridorPrototype/Head"]
+fov = 90
+
+[node name="Elevator" type="Area3D" parent="World"]
+script = ExtResource("2_elevator")
+
+[node name="CapsuleCollision" type="CapsuleShape3D" parent="World"]
+
+[resource name="collision" type="CollisionPolygon3D"]
+points = PackedVector3Array(0, 0, 0, 4, 0, 0, 4, 0, 4, 0, 0, 4)
+
+[resource name="mesh" type="BoxMesh"]
+size = Vector3(4.0, 3.0, 12.0)
+
+[resource name="shape" type="BoxShape3D"]
+extents = Vector3(2.0, 1.5, 6.0)

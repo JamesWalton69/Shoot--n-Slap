@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "WoodenPallet"
+albedo_color = Color(0.42, 0.32, 0.22, 1)
+roughness = 0.88
+uv1_triplanar = true
