@@ -2,6 +2,7 @@ class_name AmbientAudioPlayer
 extends AudioStreamPlayer
 ## AmbientAudioPlayer - procedural ambient audio source routed through the Ambient bus.
 ## Integrates seamless loops from SoundSynthesizer ('wind' or 'hum').
+## Muted and playback disabled per user request to eliminate harsh procedural noise.
 
 const SoundSynthesizer = preload("res://addons/snss_core/audio/SoundSynthesizer.gd")
 
@@ -13,5 +14,5 @@ func _ready() -> void:
 		stream = SoundSynthesizer.get_wind_loop()
 	elif ambient_type == "hum":
 		stream = SoundSynthesizer.get_hum_loop()
-	autoplay = true
-	play()
+	autoplay = false
+	stop()

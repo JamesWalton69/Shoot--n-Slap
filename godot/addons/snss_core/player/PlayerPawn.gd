@@ -424,9 +424,7 @@ func _physics_process(delta: float) -> void:
 		_camera.rotation.z = move_toward(_camera.rotation.z, 0.0, 5.0 * delta)
 
 func _play_footstep() -> void:
-	if _footstep_player:
-		_footstep_player.pitch_scale = randf_range(0.92, 1.08)
-		_footstep_player.play()
+	pass # Audio muted per user request to eliminate noise
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:

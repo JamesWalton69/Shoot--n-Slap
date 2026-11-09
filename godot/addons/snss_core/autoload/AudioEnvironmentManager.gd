@@ -29,6 +29,10 @@ var _snapshots: Dictionary = {}
 func _ready() -> void:
 	var ambient_bus := _get_bus_index(AMBIENT_BUS_NAME)
 	var sfx_bus := _get_bus_index(SFX_BUS_NAME)
+	var master_bus := _get_bus_index("Master")
+	AudioServer.set_bus_mute(master_bus, true)
+	AudioServer.set_bus_mute(ambient_bus, true)
+	AudioServer.set_bus_mute(sfx_bus, true)
 	_ambient_snapshot_volume = AudioServer.get_bus_volume_db(ambient_bus)
 	_sfx_snapshot_volume = AudioServer.get_bus_volume_db(sfx_bus)
 	sfx_bus_volume_db = _sfx_snapshot_volume
@@ -58,6 +62,8 @@ func apply_mode_snapshot() -> void:
 		AudioMode.DARK_70:
 			set_ambient_bus_volume_db(-80.0) # absolute silence clamp
 			set_sfx_bus_volume_db_to_gain(sfx_linear_gain) # +3.52 dB for 1.5x linear gain
+	var master_bus := _get_bus_index("Master")
+	AudioServer.set_bus_mute(master_bus, true)
 
 func set_ambient_bus_volume_db(level_db: float) -> void:
 	ambient_bus_volume_db = level_db

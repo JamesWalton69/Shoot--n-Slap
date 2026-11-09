@@ -174,10 +174,11 @@ func _trigger_ingress_lockdown() -> void:
 		_ingress_siren.visible = true
 		_ingress_siren.light_color = Color(1.0, 0.1, 0.1)
 
-	if _audio_player and is_inside_tree():
-		_audio_player.stream = SoundSynthesizer.get_terminal_beep()
-		_audio_player.pitch_scale = 0.65
-		_audio_player.play()
+	# Audio muted per user request
+	# if _audio_player and is_inside_tree():
+	# 	_audio_player.stream = SoundSynthesizer.get_terminal_beep()
+	# 	_audio_player.pitch_scale = 0.65
+	# 	_audio_player.play()
 
 func _on_scare_trigger_entered(body: Node3D) -> void:
 	if _scare_triggered:
@@ -196,9 +197,10 @@ func _play_scare_sequence() -> void:
 		tween.tween_property(red_light, "light_energy", 0.2, 0.08)
 		tween.tween_property(red_light, "light_energy", 2.2, 0.14)
 
-	if _audio_player and is_inside_tree():
-		_audio_player.stream = SoundSynthesizer.get_radio_static()
-		_audio_player.play()
+	# Scare audio muted per user request
+	# if _audio_player and is_inside_tree():
+	# 	_audio_player.stream = SoundSynthesizer.get_radio_static()
+	# 	_audio_player.play()
 
 	if _story_memo_label:
 		_story_memo_label.modulate = Color(1.0, 0.15, 0.15, 1.0)
@@ -209,9 +211,10 @@ func _on_keycard_alpha_pickup(body_or_card: Variant = null) -> void:
 	if body_or_card is CharacterBody3D or body_or_card is String or body_or_card == null:
 		has_keycard_alpha = true
 		print("[Floor 3] Keycard ALPHA acquired! Laser Room security door unlocked.")
-		if _audio_player and is_inside_tree():
-			_audio_player.stream = SoundSynthesizer.get_reload_click()
-			_audio_player.play()
+		# Audio muted per user request
+		# if _audio_player and is_inside_tree():
+		# 	_audio_player.stream = SoundSynthesizer.get_reload_click()
+		# 	_audio_player.play()
 		_ensure_references()
 		if laser_door and laser_door.has_method("unlock_door"):
 			laser_door.unlock_door()
@@ -225,9 +228,10 @@ func _on_keycard_beta_pickup(body_or_card: Variant = null) -> void:
 	if body_or_card is CharacterBody3D or body_or_card is String or body_or_card == null:
 		has_keycard_beta = true
 		print("[Floor 3] Keycard BETA acquired! Maintenance Detour around the blockage is now UNLOCKED.")
-		if _audio_player and is_inside_tree():
-			_audio_player.stream = SoundSynthesizer.get_reload_click()
-			_audio_player.play()
+		# Audio muted per user request
+		# if _audio_player and is_inside_tree():
+		# 	_audio_player.stream = SoundSynthesizer.get_reload_click()
+		# 	_audio_player.play()
 		_ensure_references()
 		if detour_door and detour_door.has_method("unlock_door"):
 			detour_door.unlock_door()
@@ -276,9 +280,10 @@ func _on_ammo_box_entered(body: Node3D) -> void:
 					if vm.has_signal("ammo_changed"):
 						vm.ammo_changed.emit(vm.ammo, vm.max_ammo)
 					print("[Floor 3] Ammo resupplied! Full 17 rounds restored.")
-					if _audio_player and is_inside_tree():
-						_audio_player.stream = SoundSynthesizer.get_reload_click()
-						_audio_player.play()
+					# Audio muted per user request
+					# if _audio_player and is_inside_tree():
+					# 	_audio_player.stream = SoundSynthesizer.get_reload_click()
+					# 	_audio_player.play()
 					var box := get_node_or_null("LockerRoom/AmmoResupplyBox")
 					if box:
 						box.queue_free()

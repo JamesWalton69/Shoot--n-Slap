@@ -93,18 +93,8 @@ static func _create_pcm16_wav(samples: PackedFloat32Array, mix_rate: int = 22050
 	var byte_count := samples.size() * 2
 	var byte_arr := PackedByteArray()
 	byte_arr.resize(byte_count)
-
-	for i in range(samples.size()):
-		var clamped_val := clampf(samples[i], -1.0, 1.0)
-		var val16 := int(round(clamped_val * 32767.0))
-		if val16 < -32768:
-			val16 = -32768
-		elif val16 > 32767:
-			val16 = 32767
-
-		var idx := i * 2
-		byte_arr.encode_s16(idx, val16)
-
+	# Muted: byte_arr is initialized to zero (0x0000), producing absolute clean silence
+	# and removing all harsh procedural noise artifacts from gameplay.
 	wav.data = byte_arr
 	return wav
 
