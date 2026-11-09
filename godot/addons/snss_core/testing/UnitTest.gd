@@ -595,6 +595,21 @@ func test_part1_corridor_scene_integration() -> void:
 	else:
 		_fail("Part1Corridor", "One or more blueprint components missing in scene hierarchy")
 
+	# Verify all blueprint sub-doors and intermediate rooms from the sketch
+	var scare_door = corridor.get_node_or_null("ScareRoomDoor")
+	var locker_door = corridor.get_node_or_null("LockerRoomDoor")
+	var laser_door = corridor.get_node_or_null("LaserRoomDoor")
+	var west_door = corridor.get_node_or_null("WestRoom1Door")
+	var west_room = corridor.get_node_or_null("WestCorridorRoom")
+	var east_door = corridor.get_node_or_null("EastRoom2Door")
+	var east_room = corridor.get_node_or_null("ServerCommsRoom")
+	var barracks_door = corridor.get_node_or_null("UpperBarracksDoor")
+
+	if scare_door and locker_door and laser_door and west_door and west_room and east_door and east_room and barracks_door:
+		_pass("Part1Corridor: Blueprint sub-doors (Scare, Locker, Laser, West Sub-Room 1, East Sub-Room 2, Barracks) and intermediate wing rooms verified")
+	else:
+		_fail("Part1Corridor", "Blueprint sub-doors or intermediate rooms missing in scene")
+
 	corridor.queue_free()
 
 func test_henchman_retargeted_animations() -> void:
@@ -662,10 +677,10 @@ func test_floor_3_ingress_lockdown_and_scare_room() -> void:
 	# Test Keycard Alpha and Keycard Beta Pickups
 	var mock_player = CharacterBody3D.new()
 	corridor._on_keycard_alpha_pickup(mock_player)
-	if corridor.has_keycard_alpha:
-		_pass("Floor 3: picking up Keycard Alpha grants Laser Room clearance")
+	if corridor.has_keycard_alpha and corridor.laser_door and not corridor.laser_door.is_locked:
+		_pass("Floor 3: picking up Keycard Alpha grants Laser Room clearance and unlocks LaserRoomDoor")
 	else:
-		_fail("Floor 3", "Failed to acquire Keycard Alpha")
+		_fail("Floor 3", "Failed to acquire Keycard Alpha or unlock LaserRoomDoor")
 
 	corridor._on_keycard_beta_pickup(mock_player)
 	if corridor.has_keycard_beta and corridor.detour_door and not corridor.detour_door.is_locked:

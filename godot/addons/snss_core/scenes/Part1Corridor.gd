@@ -1,15 +1,25 @@
 class_name Part1Corridor
 extends Node3D
 ## Part1Corridor - Floor 3: Utility, Storage, Laser Grid & Security Wing.
-## Redesigned per architectural blueprint:
-## Ingress Lift -> Scare Room & Locker Room -> Central Laser Room -> Upper Guard Wing ->
-## Collapsed Blockage -> Maintenance Detour -> 2nd Floor Lift.
+## Built strictly according to the hand-drawn blueprint:
+## Ingress Lift S-3 -> Scare Room (Alpha Key) & Locker Room (Armory) ->
+## Central Laser Room (Tripwire Grid & Security Console) flanked by
+## West Security Office (Sub-Room 1) and East Comms Relay (Sub-Room 2) ->
+## Upper Guard Barracks (Beta Key) -> Crushed Hallway Blockage ->
+## Maintenance Detour (2-Man Patrol) -> 2nd Floor Lift S-2.
 
 const SoundSynthesizer = preload("res://addons/snss_core/audio/SoundSynthesizer.gd")
 
 var entry_door: Node3D
 var exit_door: Node3D
 var detour_door: Node3D
+var laser_door: Node3D
+var scare_door: Node3D
+var locker_door: Node3D
+var west_room1_door: Node3D
+var east_room2_door: Node3D
+var barracks_door: Node3D
+
 var terminal: Area3D
 var player: CharacterBody3D
 
@@ -31,6 +41,18 @@ func _ensure_references() -> void:
 		exit_door = get_node_or_null("ExitElevatorSlidingDoor") as Node3D
 	if detour_door == null:
 		detour_door = get_node_or_null("MaintenanceDetourDoor") as Node3D
+	if laser_door == null:
+		laser_door = get_node_or_null("LaserRoomDoor") as Node3D
+	if scare_door == null:
+		scare_door = get_node_or_null("ScareRoomDoor") as Node3D
+	if locker_door == null:
+		locker_door = get_node_or_null("LockerRoomDoor") as Node3D
+	if west_room1_door == null:
+		west_room1_door = get_node_or_null("WestRoom1Door") as Node3D
+	if east_room2_door == null:
+		east_room2_door = get_node_or_null("EastRoom2Door") as Node3D
+	if barracks_door == null:
+		barracks_door = get_node_or_null("UpperBarracksDoor") as Node3D
 	if terminal == null:
 		terminal = get_node_or_null("LaserRoom/TerminalConsoleArea") as Area3D
 		if terminal == null:
@@ -105,11 +127,13 @@ func _ready() -> void:
 	if entry_door and entry_door.has_method("open_door"):
 		entry_door.call_deferred("open_door")
 
-	# Lock Exit and Detour doors until respective keys are found
-	if exit_door and exit_door.has_method("lock_door"):
-		exit_door.lock_door()
+	# Lock doors that require keycards or terminal hacks
+	if laser_door and laser_door.has_method("lock_door"):
+		laser_door.lock_door()
 	if detour_door and detour_door.has_method("lock_door"):
 		detour_door.lock_door()
+	if exit_door and exit_door.has_method("lock_door"):
+		exit_door.lock_door()
 
 func _update_story_memo() -> void:
 	if _story_memo_label:
@@ -137,6 +161,8 @@ func _trigger_ingress_lockdown() -> void:
 			entry_door.close_door()
 		if entry_door.has_method("set_locked"):
 			entry_door.set_locked(true)
+		elif entry_door.has_method("lock_door"):
+			entry_door.lock_door()
 		else:
 			entry_door.set("is_locked", true)
 
@@ -183,10 +209,10 @@ func _on_keycard_alpha_pickup(body_or_card: Variant = null) -> void:
 	if body_or_card is CharacterBody3D or body_or_card is String or body_or_card == null:
 		has_keycard_alpha = true
 		print("[Floor 3] Keycard ALPHA acquired! Laser Room security door unlocked.")
-		if _audio_player:
+		if _audio_player and is_inside_tree():
 			_audio_player.stream = SoundSynthesizer.get_reload_click()
 			_audio_player.play()
-		var laser_door := get_node_or_null("LaserRoomDoor")
+		_ensure_references()
 		if laser_door and laser_door.has_method("unlock_door"):
 			laser_door.unlock_door()
 		var key_pickup := get_node_or_null("ScareRoom/KeycardAlphaPickup")
@@ -199,9 +225,10 @@ func _on_keycard_beta_pickup(body_or_card: Variant = null) -> void:
 	if body_or_card is CharacterBody3D or body_or_card is String or body_or_card == null:
 		has_keycard_beta = true
 		print("[Floor 3] Keycard BETA acquired! Maintenance Detour around the blockage is now UNLOCKED.")
-		if _audio_player:
+		if _audio_player and is_inside_tree():
 			_audio_player.stream = SoundSynthesizer.get_reload_click()
 			_audio_player.play()
+		_ensure_references()
 		if detour_door and detour_door.has_method("unlock_door"):
 			detour_door.unlock_door()
 		var key_pickup := get_node_or_null("UpperGuardBarracks/KeycardBetaPickup")
@@ -229,6 +256,7 @@ func _on_terminal_override() -> void:
 			if tripwire.has_method("disarm_tripwire"):
 				tripwire.disarm_tripwire()
 
+	_ensure_references()
 	if exit_door and exit_door.has_method("unlock_door"):
 		exit_door.unlock_door()
 
@@ -248,7 +276,7 @@ func _on_ammo_box_entered(body: Node3D) -> void:
 					if vm.has_signal("ammo_changed"):
 						vm.ammo_changed.emit(vm.ammo, vm.max_ammo)
 					print("[Floor 3] Ammo resupplied! Full 17 rounds restored.")
-					if _audio_player:
+					if _audio_player and is_inside_tree():
 						_audio_player.stream = SoundSynthesizer.get_reload_click()
 						_audio_player.play()
 					var box := get_node_or_null("LockerRoom/AmmoResupplyBox")

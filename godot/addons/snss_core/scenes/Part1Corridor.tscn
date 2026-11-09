@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://part1_corridor_csg1"]
+[gd_scene load_steps=45 format=3 uid="uid://part1_corridor_csg1"]
 
 [ext_resource type="Script" path="res://addons/snss_core/scenes/Part1Corridor.gd" id="1_part1_script"]
 [ext_resource type="Script" path="res://addons/snss_core/player/PlayerPawn.gd" id="2_player"]
@@ -83,6 +83,20 @@ emission_energy_multiplier = 2.0
 [sub_resource type="BoxMesh" id="BoxMesh_rubble"]
 size = Vector3(1.2, 0.8, 1.2)
 
+[sub_resource type="BoxMesh" id="BoxMesh_server_rack"]
+size = Vector3(0.8, 2.4, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_server"]
+albedo_color = Color(0.1, 0.12, 0.15, 1)
+metallic = 0.8
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.05, 0.4, 0.2, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_monitor"]
+size = Vector3(1.0, 0.6, 0.15)
+
 [node name="Part1Corridor" type="Node3D"]
 script = ExtResource("1_part1_script")
 
@@ -103,22 +117,17 @@ bus = &"Ambient"
 use_collision = true
 
 [node name="Floor_SouthCorridor" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 14)
-size = Vector3(4.5, 0.2, 14)
-material = ExtResource("4_floor")
-
-[node name="Floor_CenterHub" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 3)
-size = Vector3(12, 0.2, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 11)
+size = Vector3(5, 0.2, 17)
 material = ExtResource("4_floor")
 
 [node name="Floor_ScareRoom" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, -0.1, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -0.1, 14)
 size = Vector3(7.5, 0.2, 7.5)
 material = ExtResource("4_floor")
 
 [node name="Floor_LockerRoom" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, -0.1, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, -0.1, 14)
 size = Vector3(7.5, 0.2, 7.5)
 material = ExtResource("4_floor")
 
@@ -127,59 +136,104 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -2)
 size = Vector3(7.5, 0.2, 9)
 material = ExtResource("13_dia")
 
+[node name="Floor_SouthWestBend" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, -0.1, 4.5)
+size = Vector3(6, 0.2, 4)
+material = ExtResource("4_floor")
+
+[node name="Floor_WestSubRoom1" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, -0.1, 4.5)
+size = Vector3(6, 0.2, 6)
+material = ExtResource("4_floor")
+
 [node name="Floor_WestUpperCorridor" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -0.1, -12)
-size = Vector3(5, 0.2, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -0.1, -1)
+size = Vector3(4, 0.2, 8)
+material = ExtResource("4_floor")
+
+[node name="Floor_NorthCrossCorridor" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -0.1, -8.5)
+size = Vector3(10, 0.2, 4)
+material = ExtResource("4_floor")
+
+[node name="Floor_EastSubRoom2" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, -0.1, -8.5)
+size = Vector3(6, 0.2, 6)
 material = ExtResource("4_floor")
 
 [node name="Floor_UpperGuardBarracks" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, -0.1, -12)
-size = Vector3(6, 0.2, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, -0.1, -13)
+size = Vector3(6, 0.2, 6)
 material = ExtResource("4_floor")
 
 [node name="Floor_MainExitApproach" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -20)
-size = Vector3(4.5, 0.2, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -17.5)
+size = Vector3(4.5, 0.2, 17)
 material = ExtResource("4_floor")
 
 [node name="Floor_MaintenanceDetour" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -0.1, -20)
-size = Vector3(4, 0.2, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -0.1, -20)
+size = Vector3(4.5, 0.2, 12)
+material = ExtResource("13_dia")
+
+[node name="Floor_DetourConnectSouth" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -0.1, -16)
+size = Vector3(4, 0.2, 3)
+material = ExtResource("13_dia")
+
+[node name="Floor_DetourConnectNorth" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -0.1, -24)
+size = Vector3(4, 0.2, 3)
 material = ExtResource("13_dia")
 
 [node name="Floor_ExitShaft" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -29)
-size = Vector3(5.5, 0.2, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -27.5)
+size = Vector3(5.5, 0.2, 5)
 material = ExtResource("4_floor")
 
-[node name="Wall_SouthWest" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 1.7, 18)
-size = Vector3(0.4, 3.6, 6)
+[node name="Wall_SouthEast" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.7, 8.5)
+size = Vector3(0.4, 3.4, 7)
 material = ExtResource("5_wall")
 
-[node name="Wall_SouthEast" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 1.7, 18)
-size = Vector3(0.4, 3.6, 6)
+[node name="Wall_SouthWest" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.7, 8.5)
+size = Vector3(0.4, 3.4, 7)
 material = ExtResource("5_wall")
 
 [node name="Wall_ScareRoomOuter" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.8, 1.7, 14)
-size = Vector3(0.4, 3.6, 7.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 1.7, 14)
+size = Vector3(0.4, 3.4, 7.5)
 material = ExtResource("5_wall")
 
 [node name="Wall_LockerRoomOuter" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.8, 1.7, 14)
-size = Vector3(0.4, 3.6, 7.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.25, 1.7, 14)
+size = Vector3(0.4, 3.4, 7.5)
 material = ExtResource("5_wall")
 
 [node name="Wall_LaserRoomWest" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8, 1.7, -2)
-size = Vector3(0.4, 3.6, 9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.75, 1.7, -2)
+size = Vector3(0.4, 3.4, 9)
 material = ExtResource("5_wall")
 
 [node name="Wall_LaserRoomEast" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8, 1.7, -2)
-size = Vector3(0.4, 3.6, 9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.75, 1.7, -2)
+size = Vector3(0.4, 3.4, 9)
+material = ExtResource("5_wall")
+
+[node name="Wall_LaserRoomNorth" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, -6.5)
+size = Vector3(7.5, 3.4, 0.4)
+material = ExtResource("5_wall")
+
+[node name="Wall_LaserRoomSouthLeft" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.7, 2.5)
+size = Vector3(2.5, 3.4, 0.4)
+material = ExtResource("5_wall")
+
+[node name="Wall_LaserRoomSouthRight" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.7, 2.5)
+size = Vector3(2.5, 3.4, 0.4)
 material = ExtResource("5_wall")
 
 [node name="Wall_CollapsedBlockageMesh" type="CSGBox3D" parent="Geometry"]
@@ -188,8 +242,8 @@ size = Vector3(4.4, 3.2, 2.2)
 material = ExtResource("6_rust")
 
 [node name="Ceiling_Main" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
-size = Vector3(24, 0.2, 60)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, -3)
+size = Vector3(28, 0.2, 54)
 material = ExtResource("7_ceiling")
 
 [node name="IngressElevatorCabin" type="Node3D" parent="."]
@@ -231,8 +285,12 @@ collision_mask = 2
 [node name="CollisionShape3D" type="CollisionShape3D" parent="IngressLockdownTrigger"]
 shape = SubResource("BoxShape3D_lockdown_trigger")
 
+[node name="ScareRoomDoor" parent="." instance=ExtResource("14_door")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 2.5, 0, 14)
+door_label_text = "ARCHIVE // RECORDS"
+
 [node name="ScareRoom" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 14)
 
 [node name="RedEmergencyLight" type="OmniLight3D" parent="ScareRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
@@ -284,8 +342,12 @@ modulate = Color(0.2, 0.8, 1, 1)
 text = "[KEYCARD ALPHA - LASER ACCESS]"
 font_size = 18
 
+[node name="LockerRoomDoor" parent="." instance=ExtResource("14_door")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -2.5, 0, 14)
+door_label_text = "ARMORY & RESUPPLY"
+
 [node name="LockerRoom" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0, 14)
 
 [node name="LockerLight" type="OmniLight3D" parent="LockerRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
@@ -313,6 +375,11 @@ font_size = 18
 
 [node name="LockerHenchman" parent="LockerRoom" groups=["enemy"] instance=ExtResource("15_henchman")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1)
+
+[node name="LaserRoomDoor" parent="." instance=ExtResource("14_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.5)
+is_locked = true
+door_label_text = "LASER SECURITY GRID"
 
 [node name="LaserRoom" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2)
@@ -368,8 +435,63 @@ text = "[SECURITY OVERRIDE CONSOLE]
 APPROACH TO DISARM LASERS"
 font_size = 20
 
+[node name="WestRoom1Door" parent="." instance=ExtResource("14_door")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -8, 0, 4.5)
+door_label_text = "CCTV MONITORING"
+
+[node name="WestCorridorRoom" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0, 4.5)
+
+[node name="WestRoomLight" type="OmniLight3D" parent="WestCorridorRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(0.7, 0.85, 0.9, 1)
+light_energy = 1.2
+omni_range = 7.0
+
+[node name="CCTVDesk" type="MeshInstance3D" parent="WestCorridorRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.38, 0)
+mesh = SubResource("BoxMesh_desk")
+
+[node name="CCTVMonitor1" type="MeshInstance3D" parent="WestCorridorRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.9, -0.2)
+mesh = SubResource("BoxMesh_monitor")
+surface_material_override/0 = ExtResource("10_screen")
+
+[node name="WestRoomHenchman" parent="WestCorridorRoom" groups=["enemy"] instance=ExtResource("15_henchman")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
+
+[node name="EastRoom2Door" parent="." instance=ExtResource("14_door")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 3.5, 0, -8.5)
+door_label_text = "COMMS RELAY HUB"
+
+[node name="ServerCommsRoom" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0, -8.5)
+
+[node name="CommsLight" type="OmniLight3D" parent="ServerCommsRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(0.4, 0.9, 0.7, 1)
+light_energy = 1.3
+omni_range = 7.0
+
+[node name="ServerRack1" type="MeshInstance3D" parent="ServerCommsRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.2, -1.5)
+mesh = SubResource("BoxMesh_server_rack")
+surface_material_override/0 = SubResource("StandardMaterial3D_server")
+
+[node name="ServerRack2" type="MeshInstance3D" parent="ServerCommsRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.2, 1.5)
+mesh = SubResource("BoxMesh_server_rack")
+surface_material_override/0 = SubResource("StandardMaterial3D_server")
+
+[node name="EastRoomHenchman" parent="ServerCommsRoom" groups=["enemy"] instance=ExtResource("15_henchman")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0, 0)
+
+[node name="UpperBarracksDoor" parent="." instance=ExtResource("14_door")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -2.5, 0, -13)
+door_label_text = "GUARD BARRACKS"
+
 [node name="UpperGuardBarracks" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0, -12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0, -13)
 
 [node name="GuardLight" type="OmniLight3D" parent="UpperGuardBarracks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
@@ -426,11 +548,12 @@ light_energy = 2.5
 omni_range = 4.0
 
 [node name="MaintenanceDetourDoor" parent="." instance=ExtResource("14_door")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 2.3, 0, -16)
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 2.5, 0, -16)
+is_locked = true
 door_label_text = "MAINTENANCE DETOUR"
 
 [node name="DetourEncounter" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0, -20)
 
 [node name="DetourLight" type="OmniLight3D" parent="DetourEncounter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
@@ -446,6 +569,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
 
 [node name="ExitElevatorSlidingDoor" parent="." instance=ExtResource("14_door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -26)
+is_locked = true
 door_label_text = "FLOOR 2 DESCENT LIFT"
 
 [node name="ExitElevatorCabin" type="Node3D" parent="."]
