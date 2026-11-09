@@ -54,6 +54,7 @@ func _run_tree_dependent_tests() -> void:
 	await test_commander_elite_variant()
 	await test_cover_scorer_selection()
 	test_floor2_squad_readiness()
+	await test_part2_warzone_full_lifecycle()
 
 	print("========================================")
 	print("TOTAL TESTS: %d | PASSED: %d | FAILED: %d" % [_passed + _failed, _passed, _failed])
@@ -1354,6 +1355,61 @@ func test_floor2_squad_readiness() -> void:
 		_pass("Floor 2 Readiness: weapons, pickups, commander AI, [E] interact, and AR audio all wired for Part2Warzone")
 	else:
 		_fail("Floor 2 Readiness", "Missing: " + ", ".join(ready_failures))
+
+func test_part2_warzone_full_lifecycle() -> void:
+	var warzone_script = load("res://addons/snss_core/scenes/Part2Warzone.gd")
+	if not warzone_script:
+		_fail("Part2Warzone", "Failed to load Part2Warzone.gd")
+		return
+
+	var warzone = Node3D.new()
+	warzone.set_script(warzone_script)
+	root.add_child(warzone)
+
+	await process_frame
+	await process_frame
+	await process_frame
+
+	if warzone.player != null and warzone.player.position.z > 17.0:
+		_pass("Part2Warzone: player spawns at S-2 entry bay with restored state")
+	else:
+		_fail("Part2Warzone", "Player spawn missing or incorrect position")
+
+	if warzone._exit_door != null and bool(warzone._exit_door.get("is_locked")):
+		_pass("Part2Warzone: Service Shaft S-1 extraction elevator begins locked")
+	else:
+		_fail("Part2Warzone", "S-1 exit door missing or unlocked at start")
+
+	if warzone._commander != null and bool(warzone._commander.get("is_commander")):
+		_pass("Part2Warzone: Garrison Commander spawned as elite with slap-resistance and gold visor")
+	else:
+		_fail("Part2Warzone", "Commander missing or elite status not set")
+
+	# Test mainframe hack completion
+	warzone._mainframe_in_range = true
+	warzone._start_hack()
+	warzone._hack_progress = 12.0
+	warzone._complete_hack()
+	if warzone.mainframe_hacked:
+		_pass("Part2Warzone: Central Security Mainframe hack sequence functional")
+	else:
+		_fail("Part2Warzone", "Mainframe hack failed to complete")
+
+	# Defeat commander
+	warzone._on_commander_defeated()
+	if warzone.commander_dead and warzone.exit_unlocked:
+		_pass("Part2Warzone: eliminating commander unlocks Service Shaft S-1")
+	else:
+		_fail("Part2Warzone", "Exit failed to unlock after commander defeat")
+
+	# Extraction completion
+	warzone._finish_floor()
+	if warzone._floor_finished:
+		_pass("Part2Warzone: extraction triggers floor complete transition to Sub-Basement Vault")
+	else:
+		_fail("Part2Warzone", "Floor finish sequence failed")
+
+	warzone.queue_free()
 
 
 

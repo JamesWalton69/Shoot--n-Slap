@@ -700,10 +700,6 @@ func _spawn_commander() -> void:
 	_commander = HENCHMAN_SCENE.instantiate()
 	_commander.name = "GarrisonCommander"
 	_commander.position = Vector3(0, 0.2, -10.2)
-	if _commander.has_method("setup_as_commander"):
-		_commander.call("setup_as_commander")
-	_commander.set("max_health", BOSS_MAX_HEALTH)
-	_commander.set("current_health", BOSS_MAX_HEALTH)
 	_commander.set("move_speed", 2.2)
 	_commander.set("run_speed", 4.4)
 	_commander.set("attack_range", 30.0)
@@ -711,6 +707,10 @@ func _spawn_commander() -> void:
 	_commander.set("patrol_distance", 0.2)
 	_commander.add_to_group("enemy")
 	add_child(_commander)
+	if _commander.has_method("setup_as_commander"):
+		_commander.call("setup_as_commander", true)
+	_commander.set("max_health", BOSS_MAX_HEALTH)
+	_commander.set("current_health", BOSS_MAX_HEALTH)
 	_commander.enemy_defeated.connect(_on_commander_defeated)
 
 	_commander_label = Label3D.new()
