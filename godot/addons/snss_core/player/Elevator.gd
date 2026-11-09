@@ -167,11 +167,32 @@ func _start_descent() -> void:
 	descent_started.emit()
 	_descend_timer.start()
 
+	# Save player persistent state to GameManager before transit
+	if _active_player:
+		var gm := get_node_or_null("/root/GameManager")
+		if gm and gm.has_method("save_player_state"):
+			gm.save_player_state(_active_player)
+		_start_cabin_rumble()
+
 	if _audio_player:
 		_audio_player.stream = SoundSynthesizer.get_elevator_chime()
 		_audio_player.play()
 
-	_update_sign("[ELEVATOR S-2 // DESCENT IN PROGRESS]\nPREPARE FOR FLOOR 2 WARZONE...", Color(0.2, 1.0, 0.4))
+	_update_sign("[ELEVATOR S-2 // DESCENT IN PROGRESS]\nTRANSIT TO FLOOR 2 WARZONE...", Color(0.2, 1.0, 0.4))
+
+func _start_cabin_rumble() -> void:
+	if _active_player == null or not is_inside_tree():
+		return
+	var head := _active_player.get_node_or_null("Head") as Node3D
+	if head:
+		var cam := head.get_node_or_null("Camera3D") as Camera3D
+		if cam:
+			var base_pos := cam.position
+			var tween := create_tween()
+			for i in range(10):
+				var shake := Vector3(randf_range(-0.02, 0.02), randf_range(-0.015, 0.015), 0.0)
+				tween.tween_property(cam, "position", base_pos + shake, 0.08)
+				tween.tween_property(cam, "position", base_pos, 0.08)
 
 func _on_descent_complete() -> void:
 	print("[Elevator S-2] Descent complete. Transitioning to Floor 2...")
@@ -189,8 +210,11 @@ func _on_fade_finished() -> void:
 		return
 	var gm := get_node_or_null("/root/GameManager")
 	var target_scene := "res://addons/snss_core/scenes/Part2Warzone.tscn"
+	var target_script := "res://addons/snss_core/scenes/Part2Warzone.gd"
 	if ResourceLoader.exists(target_scene) and gm and gm.has_method("load_scene"):
 		gm.load_scene(target_scene)
+	elif ResourceLoader.exists(target_script) and gm and gm.has_method("load_scene"):
+		gm.load_scene(target_script)
 	else:
 		print("[Elevator S-2] Floor 2 scene standby - ready for Part2Warzone integration.")
 

@@ -38,6 +38,8 @@ func _init() -> void:
 	test_floor_3_elevator_clearance()
 	test_keycard_pickup_animation()
 	test_ambient_loops_and_scene_audio()
+	test_player_persistent_state_and_elevator_transit()
+	test_laser_tripwire_zap_damage()
 
 	print("========================================")
 	print("TOTAL TESTS: %d | PASSED: %d | FAILED: %d" % [_passed + _failed, _passed, _failed])
@@ -695,6 +697,11 @@ func test_floor_3_ingress_lockdown_and_scare_room() -> void:
 	else:
 		_fail("Floor 3", "Scare sequence trigger failed")
 
+	if memo.text.contains("Underground Vault"):
+		_pass("Floor 3: story memorandum correctly references Underground Vault lore")
+	else:
+		_fail("Floor 3", "Memo does not reference Underground Vault")
+
 	mock_player.queue_free()
 	corridor.queue_free()
 
@@ -784,6 +791,74 @@ func test_keycard_pickup_animation() -> void:
 
 	mock_player.queue_free()
 	card.queue_free()
+
+func test_player_persistent_state_and_elevator_transit() -> void:
+	var gm := root.get_node_or_null("GameManager")
+	if gm == null:
+		gm = GameManagerScript.new()
+		gm.name = "GameManager"
+		root.add_child(gm)
+
+	var mock_pawn := CharacterBody3D.new()
+	var pawn_script := GDScript.new()
+	pawn_script.source_code = "extends CharacterBody3D\nvar current_health: float = 68.0\nvar look_multiplier: float = 0.65\n"
+	pawn_script.reload()
+	mock_pawn.set_script(pawn_script)
+
+	# Save mock pawn state
+	gm.save_player_state(mock_pawn)
+	if gm.player_persistent_state["current_health"] == 68.0 and gm.player_persistent_state["look_multiplier"] == 0.65:
+		_pass("GameManager: save_player_state captures HP and Look Multiplier")
+	else:
+		_fail("GameManager", "save_player_state failed to capture values: HP=%f, mult=%f" % [gm.player_persistent_state["current_health"], gm.player_persistent_state["look_multiplier"]])
+
+	# Restore to a new pawn entering Floor 2
+	var new_pawn := CharacterBody3D.new()
+	var new_script := GDScript.new()
+	new_script.source_code = "extends CharacterBody3D\nvar current_health: float = 100.0\nvar look_multiplier: float = 1.0\n"
+	new_script.reload()
+	new_pawn.set_script(new_script)
+	gm.restore_player_state(new_pawn)
+
+	if new_pawn.get("current_health") == 68.0 and new_pawn.get("look_multiplier") == 0.65:
+		_pass("GameManager: restore_player_state successfully transfers HP and Look Multiplier to new level pawn")
+	else:
+		_fail("GameManager", "restore_player_state failed to restore values: HP=%f, mult=%f" % [new_pawn.get("current_health"), new_pawn.get("look_multiplier")])
+
+	# Verify Floor 3 keycards are cleared
+	if gm.player_persistent_state["has_keycard_alpha"] == false and gm.player_persistent_state["has_keycard_beta"] == false:
+		_pass("GameManager: Floor 3 keycards cleared upon floor transit")
+	else:
+		_fail("GameManager", "Keycards were not cleared")
+
+	mock_pawn.queue_free()
+	new_pawn.queue_free()
+
+func test_laser_tripwire_zap_damage() -> void:
+	var tripwire_script = load("res://addons/snss_core/scenes/LaserTripwire.gd")
+	if not tripwire_script:
+		_fail("LaserTripwire", "Failed to load LaserTripwire.gd")
+		return
+
+	var wire: Area3D = Area3D.new()
+	wire.set_script(tripwire_script)
+	root.add_child(wire)
+
+	var victim := CharacterBody3D.new()
+	var victim_script := GDScript.new()
+	victim_script.source_code = "extends CharacterBody3D\nvar current_health: float = 100.0\nfunc take_damage(amt: float) -> void:\n\tcurrent_health -= amt\n"
+	victim_script.reload()
+	victim.set_script(victim_script)
+
+	wire._on_body_entered(victim)
+
+	if victim.current_health == 75.0:
+		_pass("LaserTripwire: crossing active laser delivers 25 zap damage to player")
+	else:
+		_fail("LaserTripwire", "Expected 75.0 HP after zap, got %f" % victim.current_health)
+
+	victim.queue_free()
+	wire.queue_free()
 
 
 

@@ -9,6 +9,7 @@ signal disarmed()
 
 @export var beam_length: float = 4.0
 @export var is_active: bool = true
+@export var zap_damage: float = 25.0
 
 var _beam_mesh: MeshInstance3D
 var _emitter_light: OmniLight3D
@@ -73,6 +74,9 @@ func _on_body_entered(body: Node3D) -> void:
 		return
 	if body is CharacterBody3D:
 		print("[LaserTripwire] *** INTRUDER DETECTED! Laser beam crossed! ***")
+		if body.has_method("take_damage"):
+			body.take_damage(zap_damage)
+			print("[LaserTripwire] Electrical zap delivered! Inflicted %.1f damage on intruder." % zap_damage)
 		tripped.emit(body)
 		if _audio_player and is_inside_tree():
 			_audio_player.stream = SoundSynthesizer.get_laser_trip_alarm()

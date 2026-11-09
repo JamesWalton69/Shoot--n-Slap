@@ -141,7 +141,7 @@ func _update_story_memo() -> void:
 		var p_name: String = str(gm.get("player_name")) if gm and gm.get("player_name") != null else "Sigma-7"
 		var bf_name: String = str(gm.get("best_friend_name")) if gm and gm.get("best_friend_name") != null else "Vikram"
 		var gf_name: String = str(gm.get("girlfriend_name")) if gm and gm.get("girlfriend_name") != null else "Pooja"
-		_story_memo_label.text = "[RECOVERED MEMORANDUM // TOP SECRET]\nTO: %s\n\nYou thought Bhoot-Teri-Maki kidnapped %s?\nIt was me all along — %s!\n\nI won't die a virgin while you take all the glory!\nMy mercenary bodyguards will bury you right here on Floor 3.\nYou'll never reach her on Floor 2!" % [
+		_story_memo_label.text = "[RECOVERED MEMORANDUM // TOP SECRET]\nTO: %s\n\nYou thought Bhoot-Teri-Maki kidnapped %s?\nIt was me all along — %s!\n\nI won't die a virgin while you take all the glory!\nMy mercenary bodyguards will bury you right here on Floor 3.\nShe is locked deep in the Underground Vault!\nMy Garrison Commander on Floor 2 will execute you before you ever reach the lower elevators!" % [
 			p_name.to_upper(), gf_name, bf_name.to_upper()
 		]
 
@@ -197,13 +197,50 @@ func _play_scare_sequence() -> void:
 		tween.tween_property(red_light, "light_energy", 0.2, 0.08)
 		tween.tween_property(red_light, "light_energy", 2.2, 0.14)
 
-	# Scare audio muted per user request
-	# if _audio_player and is_inside_tree():
-	# 	_audio_player.stream = SoundSynthesizer.get_radio_static()
-	# 	_audio_player.play()
-
 	if _story_memo_label:
 		_story_memo_label.modulate = Color(1.0, 0.15, 0.15, 1.0)
+
+	_show_radio_interception_popup()
+
+func _show_radio_interception_popup() -> void:
+	if not is_inside_tree():
+		return
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var bf_name: String = str(gm.get("best_friend_name")) if gm and gm.get("best_friend_name") != null else "Vikram"
+	var canvas := CanvasLayer.new()
+	canvas.layer = 120
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	panel.offset_top = 40.0
+	panel.offset_bottom = 110.0
+	panel.offset_left = 60.0
+	panel.offset_right = -60.0
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.08, 0.12, 0.88)
+	style.border_color = Color(1.0, 0.2, 0.2, 0.95)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(4)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var label := Label.new()
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.text = "[RADIO INTERCEPT // ENCRYPTED COMMS - %s]\n'You'll never leave Floor 3 alive! She's locked deep in the Vault, and Floor 2 is a warzone!'" % bf_name.to_upper()
+	label.modulate = Color(1.0, 0.35, 0.35)
+	panel.add_child(label)
+	canvas.add_child(panel)
+	get_tree().root.add_child(canvas)
+
+	# Auto fade-out after 5 seconds
+	var tree := get_tree()
+	if tree:
+		tree.create_timer(5.0).timeout.connect(func():
+			if is_instance_valid(canvas):
+				var tween := canvas.create_tween()
+				tween.tween_property(panel, "modulate:a", 0.0, 0.8)
+				tween.tween_callback(canvas.queue_free)
+		)
 
 func _on_keycard_alpha_pickup(body_or_card: Variant = null) -> void:
 	if has_keycard_alpha:
@@ -270,6 +307,13 @@ func _on_terminal_override() -> void:
 
 func _on_ammo_box_entered(body: Node3D) -> void:
 	if body is CharacterBody3D:
+		if body.has_method("heal"):
+			body.heal(50.0)
+		elif body.get("current_health") != null:
+			body.current_health = minf(100.0, body.current_health + 50.0)
+			if body.has_method("_update_hud"):
+				body._update_hud()
+
 		var head := body.get_node_or_null("Head") as Node3D
 		if head:
 			var cam := head.get_node_or_null("Camera3D") as Camera3D
@@ -277,13 +321,11 @@ func _on_ammo_box_entered(body: Node3D) -> void:
 				var vm := cam.get_node_or_null("ViewmodelRig")
 				if vm and vm.get("ammo") != null:
 					vm.ammo = vm.max_ammo
+					if vm.get("reserve_ammo") != null:
+						vm.reserve_ammo = max(vm.reserve_ammo, 34)
 					if vm.has_signal("ammo_changed"):
 						vm.ammo_changed.emit(vm.ammo, vm.max_ammo)
-					print("[Floor 3] Ammo resupplied! Full 17 rounds restored.")
-					# Audio muted per user request
-					# if _audio_player and is_inside_tree():
-					# 	_audio_player.stream = SoundSynthesizer.get_reload_click()
-					# 	_audio_player.play()
+					print("[Floor 3] Armory supply gathered! Health reinforced and full 17 rounds restored.")
 					var box := get_node_or_null("LockerRoom/AmmoResupplyBox")
 					if box:
 						box.queue_free()
