@@ -12,6 +12,8 @@ signal enemy_defeated()
 
 enum State { PATROL, ALERT, STAGGERED, DEAD }
 
+const WeaponPickupScript = preload("res://addons/snss_core/player/WeaponPickup.gd")
+
 @export var max_health: float = 100.0
 @export var patrol_distance: float = 5.0
 @export var move_speed: float = 2.4
@@ -19,6 +21,17 @@ enum State { PATROL, ALERT, STAGGERED, DEAD }
 @export var attack_range: float = 22.0
 @export var bullet_damage: float = 16.0
 
+## Garrison Commander elite tuning
+const COMMANDER_MAX_HEALTH := 250.0
+const COMMANDER_ALERT_RADIUS := 12.0
+const AMMO_DROP_CHANCE := 0.7
+## Local-space cover search offsets (+z points toward the player)
+const COVER_CANDIDATE_OFFSETS := [
+	Vector3(-2.6, 0, 0), Vector3(2.6, 0, 0), Vector3(-2.2, 0, -1.6),
+	Vector3(2.2, 0, 1.6), Vector3(0, 0, 2.6),
+]
+
+var is_commander: bool = false
 var current_health: float = 100.0
 var current_state: State = State.PATROL
 
@@ -37,9 +50,28 @@ var _patrol_dir: float = 1.0
 var _slap_count: int = 0
 var _stagger_timer: float = 0.0
 var _shoot_cooldown: float = 1.0
+var _cover_point: Vector3 = Vector3.ZERO
+var _cover_hold: float = 0.0
 
 var _visor_mat_alert: StandardMaterial3D
 var _visor_mat_stunned: StandardMaterial3D
+
+func setup_as_commander(elite: bool) -> void:
+	## Garrison Commander elite variant. Call after the node enters the tree
+	## (spawner/test); statless for grunts.
+	is_commander = elite
+	if not elite:
+		return
+	max_health = COMMANDER_MAX_HEALTH
+	current_health = max_health
+	if _visor_mat_alert:
+		_visor_mat_alert.albedo_color = Color(0.95, 0.7, 0.1)
+		_visor_mat_alert.emission = Color(1.0, 0.8, 0.15)
+		_visor_mat_alert.emission_energy_multiplier = 4.0
+	if _visor_light:
+		_visor_light.light_color = Color(1.0, 0.75, 0.1)
+	if _visor_mesh:
+		_visor_mesh.material_override = _visor_mat_alert
 
 func _ready() -> void:
 	current_health = max_health
@@ -122,6 +154,8 @@ func _process_patrol(delta: float) -> void:
 		if dist <= 14.0 and _has_line_of_sight(player):
 			current_state = State.ALERT
 			print("[Henchman] Player spotted! Switching to COMBAT ALERT.")
+			if is_commander:
+				_command_allies()
 			return
 
 	var dist_spawn := global_position.distance_to(_spawn_pos)
@@ -139,6 +173,21 @@ func _process_patrol(delta: float) -> void:
 	else:
 		_play_animation("idle", 0.25)
 
+func _command_allies() -> void:
+	## Garrison Commander broadcasts the alert without needing direct LOS.
+	if not is_commander or not is_inside_tree():
+		return
+	var parent := get_parent()
+	if parent == null:
+		return
+	for sibling in parent.get_children():
+		if sibling == self or not sibling is CharacterBody3D:
+			continue
+		if "current_state" in sibling and sibling.current_state == State.PATROL \
+				and global_position.distance_to(sibling.global_position) <= COMMANDER_ALERT_RADIUS:
+			sibling.current_state = State.ALERT
+			print("[Commander] %s reinforcements converging on last known position!" % sibling.name)
+
 func _process_alert(delta: float) -> void:
 	var player := _find_player()
 	if player:
@@ -155,31 +204,80 @@ func _process_alert(delta: float) -> void:
 		if dist <= attack_range and has_los:
 			velocity.x = move_toward(velocity.x, 0.0, 10.0 * delta)
 			velocity.z = move_toward(velocity.z, 0.0, 10.0 * delta)
+			_cover_point = Vector3.ZERO
+			_cover_hold = 0.0
 			_play_animation("idle", 0.15)
 			if _anim_player:
 				_anim_player.speed_scale = 1.0
 
 			_shoot_cooldown -= delta
 			if _shoot_cooldown <= 0.0:
-				_shoot_cooldown = randf_range(1.1, 1.7)
+				_shoot_cooldown = randf_range(0.8, 1.2) if is_commander else randf_range(1.1, 1.7)
 				_fire_at_player(player)
 		else:
-			# Advance tactically to re-acquire line of sight
-			if dir.length_squared() > 2.0:
-				var move_dir := dir.normalized()
-				velocity.x = move_dir.x * run_speed
-				velocity.z = move_dir.z * run_speed
-				_play_animation("walk", 0.15)
-				if _anim_player:
-					_anim_player.speed_scale = 1.35
-			else:
-				velocity.x = 0.0
-				velocity.z = 0.0
-				_play_animation("idle", 0.2)
+			# No clean shot: break the player's aim behind nearby cover.
+			_process_cover(delta, player)
 	else:
 		current_state = State.PATROL
+		_cover_point = Vector3.ZERO
+		_cover_hold = 0.0
 		if _anim_player:
 			_anim_player.speed_scale = 1.0
+
+func _process_cover(delta: float, player: CharacterBody3D) -> void:
+	# Pinned behind cover: wait out the peek window before re-challenging
+	if _cover_hold > 0.0:
+		_cover_hold -= delta
+		velocity.x = move_toward(velocity.x, 0.0, 10.0 * delta)
+		velocity.z = move_toward(velocity.z, 0.0, 10.0 * delta)
+		_play_animation("idle", 0.2)
+		return
+
+	if _cover_point == Vector3.ZERO or global_position.distance_to(_cover_point) < 0.6:
+		_cover_point = _pick_cover_point(player)
+		if _cover_point.distance_to(global_position) < 0.4:
+			# Already at the best reachable cover; hold briefly then peek again
+			_cover_hold = 1.0
+			return
+
+	var move_dir := _cover_point - global_position
+	move_dir.y = 0.0
+	if move_dir.length_squared() < 0.01:
+		_cover_hold = 1.0
+		return
+	move_dir = move_dir.normalized()
+	velocity.x = move_dir.x * run_speed
+	velocity.z = move_dir.z * run_speed
+	_play_animation("walk", 0.15)
+	if _anim_player:
+		_anim_player.speed_scale = 1.35
+
+func _pick_cover_point(target: Node3D) -> Vector3:
+	## Picks the candidate cover offset that breaks the target's line of sight,
+	## or retreats 2 m away from the target when nothing in reach blocks.
+	if not is_inside_tree() or target == null:
+		return global_position
+
+	var to_target := target.global_position - global_position
+	to_target.y = 0.0
+	if to_target.length_squared() < 0.0001:
+		return global_position
+	var fwd := to_target.normalized()
+	var right := Vector3(fwd.z, 0.0, -fwd.x)
+	var retreat := global_position - fwd * 2.0
+
+	var space_state := get_world_3d().direct_space_state
+	for offset in COVER_CANDIDATE_OFFSETS:
+		var candidate: Vector3 = global_position + right * offset.x + fwd * offset.z
+		var from := candidate + Vector3(0.0, 1.4, 0.0)
+		var to := target.global_position + Vector3(0.0, 1.4, 0.0)
+		var query := PhysicsRayQueryParameters3D.create(from, to)
+		query.exclude = [get_rid()]
+		var res: Dictionary = space_state.intersect_ray(query)
+		if res and res.get("collider") != target:
+			# Geometry found between this position and the target: cover.
+			return candidate
+	return retreat
 
 func _has_line_of_sight(target: Node3D) -> bool:
 	if target == null or not is_inside_tree():
@@ -215,9 +313,10 @@ func _fire_at_player(player: CharacterBody3D) -> void:
 					_muzzle_light.visible = false
 			)
 
-	# Raycast weapon fire with slight aim inaccuracy
+	# Raycast weapon fire with slight aim inaccuracy (commanders aim tighter)
 	var from := global_position + Vector3(0.0, 1.35, 0.0)
-	var aim_spread := Vector3(randf_range(-0.35, 0.35), randf_range(-0.2, 0.3), randf_range(-0.35, 0.35))
+	var spread: float = 0.15 if is_commander else 0.35
+	var aim_spread := Vector3(randf_range(-spread, spread), randf_range(-0.2, 0.3), randf_range(-spread, spread))
 	var to := player.global_position + Vector3(0.0, 1.35, 0.0) + aim_spread
 
 	var space_state := get_world_3d().direct_space_state
@@ -271,9 +370,9 @@ func receive_slap(slap_dir: Vector3, damage: float = 35.0) -> void:
 		die(slap_dir * 8.0)
 		return
 
-	# Enter staggered state
+	# Enter staggered state (commanders shake slaps off faster)
 	current_state = State.STAGGERED
-	_stagger_timer = 1.2
+	_stagger_timer = 0.7 if is_commander else 1.2
 	enemy_staggered.emit(_slap_count)
 
 	if _anim_player:
@@ -315,6 +414,8 @@ func _recover_from_stagger() -> void:
 		return
 
 	current_state = State.ALERT
+	_cover_point = Vector3.ZERO
+	_cover_hold = 0.0
 	_play_animation("idle", 0.25)
 	if _dizzy_stars:
 		_dizzy_stars.emitting = false
@@ -382,46 +483,26 @@ func die(death_impulse: Vector3 = Vector3.ZERO) -> void:
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 func _spawn_death_drop() -> void:
+	## Routes drops through the WeaponPickup system:
+	##   Commander  -> always the AR-15 weapon grant
+	##   Grunt      -> 70% ammo crate (+30 reserve), 30% nothing
 	if not is_inside_tree():
 		return
-	var drop := Area3D.new()
-	drop.name = "DroppedAmmoBox"
-	drop.collision_layer = 2
-	drop.collision_mask = 2
-	drop.global_position = global_position + Vector3(0.0, 0.3, 0.0)
-
-	var col := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = Vector3(1.0, 0.8, 1.0)
-	col.shape = shape
-	drop.add_child(col)
-
-	var mesh := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(0.4, 0.25, 0.25)
-	mesh.mesh = box
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.2, 0.7, 0.3)
-	mat.emission_enabled = true
-	mat.emission = Color(0.1, 0.6, 0.2)
-	mesh.material_override = mat
-	drop.add_child(mesh)
-
-	drop.body_entered.connect(func(body: Node3D):
-		if body is CharacterBody3D:
-			var head := body.get_node_or_null("Head")
-			if head:
-				var cam := head.get_node_or_null("Camera3D")
-				if cam:
-					var vm := cam.get_node_or_null("ViewmodelRig")
-					if vm and vm.get("ammo") != null:
-						vm.ammo = vm.max_ammo
-						if vm.has_signal("ammo_changed"):
-							vm.ammo_changed.emit(vm.ammo, vm.max_ammo)
-						print("[AmmoDrop] 17 rounds picked up from eliminated bodyguard!")
-			drop.queue_free()
-	)
-
+	var rolled := _roll_death_drop()
+	if rolled < 0:
+		return
+	var pickup: Area3D = WeaponPickupScript.new()
+	pickup.name = "DroppedPickup"
+	pickup.pickup_kind = rolled
+	pickup.position = global_position + Vector3(0.0, 0.3, 0.0)
 	var parent := get_parent()
 	if parent:
-		parent.call_deferred("add_child", drop)
+		parent.call_deferred("add_child", pickup)
+
+func _roll_death_drop() -> int:
+	## Deterministic roll helper for tests: -1 none, Kind.WEAPON, or Kind.AMMO.
+	if is_commander:
+		return WeaponPickupScript.Kind.WEAPON
+	if randf() < AMMO_DROP_CHANCE:
+		return WeaponPickupScript.Kind.AMMO
+	return -1
