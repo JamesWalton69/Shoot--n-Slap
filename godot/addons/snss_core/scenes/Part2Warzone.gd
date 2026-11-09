@@ -437,6 +437,9 @@ func _build_player() -> void:
 	collider.shape = capsule
 	player.add_child(collider)
 	add_child(player)
+	var gm := get_node_or_null("/root/GameManager")
+	if gm and gm.has_method("restore_player_state"):
+		gm.restore_player_state(player)
 	if player.has_signal("health_changed"):
 		player.health_changed.connect(_on_player_health_changed)
 	if player.has_signal("player_died"):
@@ -697,7 +700,10 @@ func _spawn_commander() -> void:
 	_commander = HENCHMAN_SCENE.instantiate()
 	_commander.name = "GarrisonCommander"
 	_commander.position = Vector3(0, 0.2, -10.2)
+	if _commander.has_method("setup_as_commander"):
+		_commander.call("setup_as_commander")
 	_commander.set("max_health", BOSS_MAX_HEALTH)
+	_commander.set("current_health", BOSS_MAX_HEALTH)
 	_commander.set("move_speed", 2.2)
 	_commander.set("run_speed", 4.4)
 	_commander.set("attack_range", 30.0)

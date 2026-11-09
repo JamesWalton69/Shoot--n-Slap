@@ -45,6 +45,10 @@ project/assembly_name="Shoot--nd-Slap"
 
 enabled=PackedStringArray("res://addons/snss_core/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
 
+[filesystem]
+
+import/blender/enabled=false
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
