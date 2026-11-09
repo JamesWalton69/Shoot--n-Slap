@@ -80,6 +80,11 @@ static func get_radio_static() -> AudioStreamWAV:
 		_cache["radio_static"] = _generate_radio_static()
 	return _cache["radio_static"]
 
+static func get_ar_shot() -> AudioStreamWAV:
+	if not _cache.has("ar_shot"):
+		_cache["ar_shot"] = _generate_ar_shot()
+	return _cache["ar_shot"]
+
 static func _create_pcm16_wav(samples: PackedFloat32Array, mix_rate: int = 22050, looping: bool = false) -> AudioStreamWAV:
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
@@ -405,6 +410,28 @@ static func _generate_enemy_rifle_shot() -> AudioStreamWAV:
 		var noise := (randf() * 2.0 - 1.0) * env
 		var punch := sin(t * (180.0 - t * 300.0) * TAU) * env * 0.8
 		samples[i] = (noise * 0.6 + punch * 0.4) * 0.95
+
+	return _create_pcm16_wav(samples, mix_rate, false)
+
+static func _generate_ar_shot() -> AudioStreamWAV:
+	# Sharp supersonic crack, shorter tail than the henchman rifle, with a
+	# tactile bolt-rack transient. Kept silent via the muted PCM writer.
+	var mix_rate := 22050
+	var duration := 0.12
+	var count := int(mix_rate * duration)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+
+	for i in range(count):
+		var t := float(i) / float(mix_rate)
+		var env := exp(-t * 55.0)
+		var noise := (randf() * 2.0 - 1.0) * env
+		var punch := sin(t * (220.0 - t * 400.0) * TAU) * env * 0.55
+		var bolt := 0.0
+		if t > 0.05:
+			var t2 := t - 0.05
+			bolt = sin(t2 * 3400.0 * TAU) * exp(-t2 * 260.0) * 0.22
+		samples[i] = (noise * 0.7 + punch + bolt) * 0.95
 
 	return _create_pcm16_wav(samples, mix_rate, false)
 

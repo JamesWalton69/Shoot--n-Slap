@@ -9,7 +9,7 @@ static func register_inputs() -> void:
 	const ACTIONS := [
 		"move_forward", "move_back", "move_left", "move_right", "jump",
 		"look_right", "look_right_neg", "look_down", "look_down_neg",
-		"flashlight_toggle", "reload", "sprint", "fire", "aim_down_sights",
+		"flashlight_toggle", "reload", "sprint", "fire", "aim_down_sights", "interact",
 	]
 	for action in ACTIONS:
 		if not InputMap.has_action(action):
@@ -38,6 +38,8 @@ static func register_inputs() -> void:
 	# Utilities
 	_key("flashlight_toggle", KEY_L)
 	_joy("flashlight_toggle", JOY_BUTTON_RIGHT_SHOULDER)
+	_key("interact", KEY_E)
+	_joy("interact", JOY_BUTTON_B)
 
 static func _mouse_btn(action: String, button_index: MouseButton) -> void:
 	var ev := InputEventMouseButton.new()

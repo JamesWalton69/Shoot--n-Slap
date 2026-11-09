@@ -107,6 +107,8 @@ func _setup_camera_rig() -> void:
 			_viewmodel.reload_started.connect(_on_viewmodel_reload_started)
 		if _viewmodel.has_signal("reload_completed") and not _viewmodel.reload_completed.is_connected(_on_viewmodel_reload_completed):
 			_viewmodel.reload_completed.connect(_on_viewmodel_reload_completed)
+		if _viewmodel.has_signal("weapon_switched") and not _viewmodel.weapon_switched.is_connected(_on_weapon_switched):
+			_viewmodel.weapon_switched.connect(_on_weapon_switched)
 
 	# Full-Body Mesh (visible when looking down)
 	_body_mesh = get_node_or_null("PlayerBodyMesh") as Node3D
@@ -304,6 +306,23 @@ func _update_hud() -> void:
 			effective
 		]
 
+func _weapon_hud_name() -> String:
+	if _viewmodel and _viewmodel.has_method("weapon_display_name"):
+		return str(_viewmodel.weapon_display_name())
+	return "GLOCK 17"
+
+func _cycle_weapon(direction: int) -> void:
+	if _viewmodel == null or not _viewmodel.has_method("switch_weapon"):
+		return
+	var slot_count := 2 # Glock 17, AR-15 (WeaponSlot enum on ViewmodelRig)
+	var next_slot := (int(_viewmodel.active_weapon_slot) + direction + slot_count) % slot_count
+	_viewmodel.switch_weapon(next_slot)
+
+func _on_weapon_switched(_slot: int, _weapon_name: String) -> void:
+	# Refresh the weapon readout for the newly equipped slot
+	if _viewmodel and _weapon_status_label:
+		_on_viewmodel_ammo_changed(int(_viewmodel.ammo), int(_viewmodel.max_ammo))
+
 func _on_viewmodel_fired(hit_node: Node3D, hit_pos: Vector3, _hit_normal: Vector3) -> void:
 	_camera_trauma = minf(_camera_trauma + 0.25, 1.0)
 	shot_fired.emit(hit_node, hit_pos)
@@ -320,16 +339,17 @@ func _on_viewmodel_ammo_changed(current: int, max_capacity: int) -> void:
 	if _weapon_status_label:
 		var gm = get_node_or_null("/root/GameManager") if is_inside_tree() else null
 		var p_name: String = str(gm.get("player_name")) if gm and gm.get("player_name") != null else "SIGMA-7"
+		var w_name := _weapon_hud_name()
 		if current == 0:
-			_weapon_status_label.text = "%s // GLOCK 17 [EMPTY]\n[R] RELOAD  |  [R-CLICK] AIM DOWN SIGHTS" % p_name
+			_weapon_status_label.text = "%s // %s [EMPTY]\n[R] RELOAD  |  [R-CLICK] AIM DOWN SIGHTS" % [p_name, w_name]
 		else:
-			_weapon_status_label.text = "%s // GLOCK 17 [%d/%d]\n[L-CLICK] FIRE  |  [R-CLICK] AIM DOWN SIGHTS  |  [R] RELOAD" % [p_name, current, max_capacity]
+			_weapon_status_label.text = "%s // %s [%d/%d]\n[L-CLICK] FIRE  |  [R-CLICK] AIM DOWN SIGHTS  |  [R] RELOAD" % [p_name, w_name, current, max_capacity]
 
 func _on_viewmodel_reload_started() -> void:
 	if _weapon_status_label:
 		var gm = get_node_or_null("/root/GameManager") if is_inside_tree() else null
 		var p_name: String = str(gm.get("player_name")) if gm and gm.get("player_name") != null else "SIGMA-7"
-		_weapon_status_label.text = "%s // GLOCK 17 [RELOADING...]\n[L-CLICK] BUSY  |  [R-CLICK] AIM DOWN SIGHTS" % p_name
+		_weapon_status_label.text = "%s // %s [RELOADING...]\n[L-CLICK] BUSY  |  [R-CLICK] AIM DOWN SIGHTS" % [p_name, _weapon_hud_name()]
 
 func _on_viewmodel_reload_completed() -> void:
 	if _viewmodel and _weapon_status_label and _viewmodel.get("ammo") != null:
@@ -441,24 +461,39 @@ func _input(event: InputEvent) -> void:
 
 	elif event is InputEventMouseButton:
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-				# Shoot weapon
-				if _viewmodel and _viewmodel.has_method("shoot"):
-					_viewmodel.shoot()
+			if event.button_index == MOUSE_BUTTON_LEFT:
+				# Shoot weapon; held for full-auto sustained fire
+				if event.pressed:
+					if _viewmodel and _viewmodel.has_method("shoot"):
+						_viewmodel.shoot()
+					if _viewmodel and _viewmodel.has_method("set_fire_held"):
+						_viewmodel.set_fire_held(true)
+				elif _viewmodel and _viewmodel.has_method("set_fire_held"):
+					_viewmodel.set_fire_held(false)
 			elif event.button_index == MOUSE_BUTTON_RIGHT:
 				# Aim Down Sights (ADS)
 				_set_ads(event.pressed)
+			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+				_cycle_weapon(1)
+			elif event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+				_cycle_weapon(-1)
 		else:
 			if event.pressed:
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	elif event is InputEventKey and event.pressed:
 		if event.keycode == KEY_R:
-			# Reload Glock 17
+			# Reload active weapon
 			if _viewmodel and _viewmodel.has_method("reload"):
 				_viewmodel.reload()
-			if _viewmodel and _viewmodel.has_method("reload"):
-				_viewmodel.reload()
+		elif event.keycode == KEY_1:
+			# Slot 1: Glock 17
+			if _viewmodel and _viewmodel.has_method("switch_weapon"):
+				_viewmodel.switch_weapon(0)
+		elif event.keycode == KEY_2:
+			# Slot 2: Assault Rifle (if owned; granted by pickup/drop)
+			if _viewmodel and _viewmodel.has_method("switch_weapon"):
+				_viewmodel.switch_weapon(1)
 		elif event.keycode == KEY_L:
 			_toggle_flashlight()
 		elif event.keycode == KEY_ESCAPE:
