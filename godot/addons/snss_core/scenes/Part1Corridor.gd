@@ -135,6 +135,85 @@ func _ready() -> void:
 	if exit_door and exit_door.has_method("lock_door"):
 		exit_door.lock_door()
 
+	# Mount imported 3D props (CRT monitor, blood pool, wall decals, and keycard door scanners)
+	_setup_scare_and_door_decorations()
+
+func _setup_scare_and_door_decorations() -> void:
+	# 1. Scare Room: Interrogation Desk CRT Monitor
+	var desk := get_node_or_null("ScareRoom/Desk") as Node3D
+	if desk:
+		var crt_scene_path := "res://assets/models/props/crt_monitor.tscn"
+		if ResourceLoader.exists(crt_scene_path) or FileAccess.file_exists(crt_scene_path):
+			var crt_scene: PackedScene = load(crt_scene_path)
+			if crt_scene:
+				var crt := crt_scene.instantiate() as Node3D
+				crt.name = "DeskCRTMonitor"
+				crt.position = Vector3(0.5, 0.38, 0.0)
+				crt.scale = Vector3(0.45, 0.45, 0.45)
+				crt.rotation_degrees = Vector3(0, -25, 0)
+				desk.add_child(crt)
+
+		# 2. Blood Pool Decal under desk
+		var blood_tex_path := "res://assets/textures/blood/textures_2k/2.5K/Blood Pool 8.png"
+		var blood_tex: Texture2D = null
+		if ResourceLoader.exists(blood_tex_path):
+			blood_tex = load(blood_tex_path) as Texture2D
+		elif FileAccess.file_exists(blood_tex_path):
+			var img := Image.load_from_file(blood_tex_path)
+			if img:
+				blood_tex = ImageTexture.create_from_image(img)
+
+		if blood_tex:
+			var decal := Decal.new()
+			decal.name = "DeskBloodDecal"
+			decal.texture_albedo = blood_tex
+			decal.size = Vector3(2.4, 0.8, 2.4)
+			decal.position = Vector3(0.0, -0.37, 0.4)
+			desk.add_child(decal)
+
+		# 3. Bloody Handprints on the Scare Room wall
+		var handprint_tex_path := "res://assets/textures/blood/textures_2k/2.5K/Bloody Handprints 1.png"
+		var handprint_tex: Texture2D = null
+		if ResourceLoader.exists(handprint_tex_path):
+			handprint_tex = load(handprint_tex_path) as Texture2D
+		elif FileAccess.file_exists(handprint_tex_path):
+			var img_hand := Image.load_from_file(handprint_tex_path)
+			if img_hand:
+				handprint_tex = ImageTexture.create_from_image(img_hand)
+
+		if handprint_tex:
+			var hand_decal := Decal.new()
+			hand_decal.name = "WallHandprintDecal"
+			hand_decal.texture_albedo = handprint_tex
+			hand_decal.size = Vector3(1.2, 1.2, 1.2)
+			hand_decal.position = Vector3(0.8, 1.4, -2.7)
+			hand_decal.rotation_degrees = Vector3(90, 0, 0)
+			var scare_room := get_node_or_null("ScareRoom")
+			if scare_room:
+				scare_room.add_child(hand_decal)
+
+	# 4. Keycard Scanners on Door Frames
+	var scanner_scene_path := "res://assets/models/props/keycard__scanner.tscn"
+	if ResourceLoader.exists(scanner_scene_path) or FileAccess.file_exists(scanner_scene_path):
+		var scanner_scene: PackedScene = load(scanner_scene_path)
+		if scanner_scene:
+			if laser_door == null:
+				laser_door = get_node_or_null("LaserRoomDoor") as Node3D
+			if laser_door and laser_door.get_node_or_null("DoorScannerLaser") == null:
+				var sc_laser := scanner_scene.instantiate() as Node3D
+				sc_laser.name = "DoorScannerLaser"
+				sc_laser.position = Vector3(1.35, 1.25, 0.1)
+				sc_laser.scale = Vector3(0.35, 0.35, 0.35)
+				laser_door.add_child(sc_laser)
+			if detour_door == null:
+				detour_door = get_node_or_null("MaintenanceDetourDoor") as Node3D
+			if detour_door and detour_door.get_node_or_null("DoorScannerDetour") == null:
+				var sc_detour := scanner_scene.instantiate() as Node3D
+				sc_detour.name = "DoorScannerDetour"
+				sc_detour.position = Vector3(1.35, 1.25, 0.1)
+				sc_detour.scale = Vector3(0.35, 0.35, 0.35)
+				detour_door.add_child(sc_detour)
+
 func _update_story_memo() -> void:
 	if _story_memo_label:
 		var gm: Node = get_node_or_null("/root/GameManager") if is_inside_tree() else null

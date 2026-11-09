@@ -582,6 +582,10 @@ func test_part1_corridor_scene_integration() -> void:
 
 	var corridor = corridor_scene.instantiate()
 	root.add_child(corridor)
+	if corridor.has_method("_ensure_references"):
+		corridor._ensure_references()
+	if corridor.has_method("_setup_scare_and_door_decorations"):
+		corridor._setup_scare_and_door_decorations()
 
 	var entry_door = corridor.get_node_or_null("EntryBaySlidingDoor")
 	var exit_door = corridor.get_node_or_null("ExitElevatorSlidingDoor")
@@ -639,6 +643,10 @@ func test_ambient_loops_and_scene_audio() -> void:
 
 	var corridor = corridor_scene.instantiate()
 	root.add_child(corridor)
+	if corridor.has_method("_ensure_references"):
+		corridor._ensure_references()
+	if corridor.has_method("_setup_scare_and_door_decorations"):
+		corridor._setup_scare_and_door_decorations()
 	var hum_player = corridor.get_node_or_null("AmbientHum") as AudioStreamPlayer
 
 	if wind_player and wind_player.bus == "Ambient" and hum_player and hum_player.bus == "Ambient":
@@ -657,6 +665,10 @@ func test_floor_3_ingress_lockdown_and_scare_room() -> void:
 
 	var corridor = corridor_scene.instantiate()
 	root.add_child(corridor)
+	if corridor.has_method("_ensure_references"):
+		corridor._ensure_references()
+	if corridor.has_method("_setup_scare_and_door_decorations"):
+		corridor._setup_scare_and_door_decorations()
 
 	var entry_door = corridor.get_node_or_null("EntryBaySlidingDoor")
 	var cabin = corridor.get_node_or_null("IngressElevatorCabin")
@@ -702,6 +714,16 @@ func test_floor_3_ingress_lockdown_and_scare_room() -> void:
 	else:
 		_fail("Floor 3", "Memo does not reference Underground Vault")
 
+	# Verify newly mounted 3D props & decals
+	var desk_crt = corridor.get_node_or_null("ScareRoom/Desk/DeskCRTMonitor")
+	var desk_blood = corridor.get_node_or_null("ScareRoom/Desk/DeskBloodDecal")
+	var hand_decal = corridor.get_node_or_null("ScareRoom/WallHandprintDecal")
+	var laser_scanner = corridor.get_node_or_null("LaserRoomDoor/DoorScannerLaser")
+	if desk_crt and desk_blood and hand_decal and laser_scanner:
+		_pass("Floor 3: CRT monitor, blood pool, wall handprint decals, and keycard scanners mounted successfully")
+	else:
+		_fail("Floor 3", "Props mounting incomplete: crt=%s, blood=%s, hand=%s, scanner=%s" % [desk_crt != null, desk_blood != null, hand_decal != null, laser_scanner != null])
+
 	mock_player.queue_free()
 	corridor.queue_free()
 
@@ -713,6 +735,10 @@ func test_floor_3_elevator_clearance() -> void:
 
 	var corridor = corridor_scene.instantiate()
 	root.add_child(corridor)
+	if corridor.has_method("_ensure_references"):
+		corridor._ensure_references()
+	if corridor.has_method("_setup_scare_and_door_decorations"):
+		corridor._setup_scare_and_door_decorations()
 
 	var elev = corridor.get_node_or_null("ExitElevatorCabin/ExitElevatorZone")
 	if not elev:
